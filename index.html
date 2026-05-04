@@ -1,42 +1,3477 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Welcome :)</title>
-    <style>
-      @font-face {
-        font-family: 'Johnston ITC Std';
-        font-weight: normal;
-        font-style: normal;
-      }
-      body {
-        font-family: 'Johnston ITC Std', sans-serif;
-        background: #000000;
-        color: #222;
-        text-align: center;
-        margin: 0;
-        padding: 20px;
-        overflow-x: hidden;
-      }
-      .wrap { text-align: center; }
-      img {
-        width: 220px; height: 220px;
-        cursor: pointer;
-        transition: transform 1s ease;
-        user-select: none;
-        border-radius: 0px;
-        border: 0px solid black;
-        display: block;
-        margin: 0 auto;
-      }
-      .label { margin-top: 12px; opacity: .9; text-color: white}
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <img id="img" src="https://files.catbox.moe/sb1eh3.png" alt="Click this!" width="200" height="200" tabindex="0">
-    
-      <div class="label" id="captionRevs">Hello there.</div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>macOS Tahoe</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --glass-bg: rgba(255,255,255,0.18);
+    --glass-border: rgba(255,255,255,0.38);
+    --glass-shadow: 0 8px 32px rgba(0,0,0,0.22), 0 2px 8px rgba(0,0,0,0.12);
+    --glass-blur: blur(28px) saturate(180%);
+    --glass-highlight: rgba(255,255,255,0.55);
+    --accent: #007AFF;
+    --accent2: #5E5CE6;
+    --text: rgba(255,255,255,0.95);
+    --text-dim: rgba(255,255,255,0.6);
+    --iridescent: linear-gradient(135deg,rgba(255,255,255,0.4) 0%,rgba(180,200,255,0.2) 30%,rgba(255,180,220,0.15) 60%,rgba(255,255,255,0.3) 100%);
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  }
+
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    font-family: var(--font);
+    user-select: none;
+    cursor: default;
+  }
+
+  /* ─── DESKTOP ─── */
+  #desktop {
+    width: 100%; height: 100%;
+    position: relative;
+    background: #1a1a2e;
+    overflow: hidden;
+  }
+
+  #wallpaper {
+    position: absolute; inset: 0;
+    background: 
+      radial-gradient(ellipse 80% 60% at 20% 30%, rgba(60,120,255,0.55) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 80% at 80% 70%, rgba(120,60,255,0.45) 0%, transparent 65%),
+      radial-gradient(ellipse 50% 50% at 50% 50%, rgba(30,200,180,0.25) 0%, transparent 70%),
+      radial-gradient(ellipse 90% 90% at 60% 20%, rgba(255,80,120,0.2) 0%, transparent 60%),
+      linear-gradient(160deg, #0b0f2a 0%, #1a1060 40%, #0d1f3a 70%, #0a0a1a 100%);
+    animation: wallpaperShift 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes wallpaperShift {
+    0%   { filter: hue-rotate(0deg) brightness(1); }
+    100% { filter: hue-rotate(15deg) brightness(1.08); }
+  }
+
+  /* Stars */
+  #stars { position: absolute; inset: 0; pointer-events: none; }
+  .star { position: absolute; border-radius: 50%; background: white; animation: twinkle var(--d) ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: var(--min); } to { opacity: var(--max); } }
+
+  /* Lake reflection */
+  #lake {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 38%;
+    background: linear-gradient(to bottom, rgba(30,60,140,0.35) 0%, rgba(10,20,60,0.65) 100%);
+    backdrop-filter: blur(2px);
+    border-top: 1px solid rgba(80,140,255,0.18);
+  }
+  #lake::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent, transparent 40px,
+      rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 80px
+    );
+    animation: lakeWave 8s linear infinite;
+  }
+  @keyframes lakeWave { from { transform: translateX(0); } to { transform: translateX(80px); } }
+
+  /* Mountain silhouette */
+  #mountains {
+    position: absolute; bottom: 36%; left: 0; right: 0; height: 28%;
+    background: linear-gradient(to bottom, transparent 0%, rgba(5,15,45,0.7) 100%);
+    clip-path: polygon(0% 100%, 0% 55%, 5% 40%, 10% 55%, 15% 28%, 20% 45%, 25% 35%, 30% 50%, 38% 15%, 44% 45%, 50% 22%, 56% 42%, 62% 18%, 68% 38%, 75% 25%, 80% 42%, 85% 30%, 90% 48%, 95% 38%, 100% 52%, 100% 100%);
+  }
+
+  /* ─── MENU BAR ─── */
+  #menubar {
+    position: absolute; top: 0; left: 0; right: 0; height: 28px;
+    background: rgba(0,0,0,0.28);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    display: flex; align-items: center;
+    padding: 0 12px;
+    z-index: 1000;
+    gap: 0;
+  }
+  #menubar::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--iridescent);
+    pointer-events: none;
+    opacity: 0.35;
+  }
+
+  .menu-apple {
+    font-size: 15px; color: white;
+    padding: 0 10px; height: 100%;
+    display: flex; align-items: center;
+    cursor: pointer; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .menu-apple:hover { background: rgba(255,255,255,0.15); }
+
+  .menu-item {
+    padding: 0 10px; height: 100%;
+    display: flex; align-items: center;
+    color: white; font-size: 13px; font-weight: 500;
+    cursor: pointer; border-radius: 4px;
+    transition: background 0.15s; position: relative;
+  }
+  .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.15); }
+
+  #menu-right {
+    margin-left: auto; display: flex; align-items: center; gap: 6px; height: 100%;
+  }
+  .menu-icon {
+    padding: 0 8px; height: 100%;
+    display: flex; align-items: center;
+    color: white; font-size: 13px;
+    cursor: pointer; border-radius: 4px;
+    transition: background 0.15s;
+  }
+  .menu-icon:hover { background: rgba(255,255,255,0.15); }
+
+  #menu-time { font-size: 13px; font-weight: 500; color: white; padding: 0 8px; }
+
+  /* Dropdown menu */
+  .dropdown {
+    position: absolute; top: 28px; left: 0;
+    min-width: 200px;
+    background: rgba(30,30,40,0.72);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3);
+    padding: 6px;
+    z-index: 2000;
+    display: none;
+    animation: dropIn 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .dropdown.show { display: block; }
+  @keyframes dropIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .dropdown-item {
+    padding: 6px 12px; border-radius: 6px;
+    color: rgba(255,255,255,0.9); font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: background 0.1s;
+  }
+  .dropdown-item:hover { background: var(--accent); }
+  .dropdown-sep { height: 1px; background: rgba(255,255,255,0.12); margin: 4px 8px; }
+  .dropdown-item.disabled { opacity: 0.4; pointer-events: none; }
+
+  /* ─── DESKTOP ICONS ─── */
+  #desktop-icons {
+    position: absolute; top: 40px; right: 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .desktop-icon {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; padding: 8px; border-radius: 10px;
+    cursor: pointer; width: 80px;
+    transition: background 0.15s;
+  }
+  .desktop-icon:hover { background: rgba(255,255,255,0.12); }
+  .desktop-icon.selected { background: rgba(0,122,255,0.35); }
+  .desktop-icon .icon-img { font-size: 38px; line-height: 1; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4)); }
+  .desktop-icon .icon-label {
+    font-size: 11px; color: white; text-align: center;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    font-weight: 500; line-height: 1.2;
+    max-width: 70px; word-break: break-word;
+  }
+
+  /* ─── WINDOWS ─── */
+  .window {
+    position: absolute;
+    border-radius: 14px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.55), 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+    overflow: hidden;
+    min-width: 300px; min-height: 200px;
+    display: flex; flex-direction: column;
+    animation: windowOpen 0.28s cubic-bezier(0.34,1.56,0.64,1);
+    transition: box-shadow 0.2s;
+  }
+  .window:not(.active-window) { box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2); }
+  @keyframes windowOpen {
+    from { opacity: 0; transform: scale(0.88); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .window.minimizing {
+    animation: windowMinimize 0.35s cubic-bezier(0.4,0,1,1) forwards;
+  }
+  @keyframes windowMinimize {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.3) translateY(200px); }
+  }
+
+  /* Liquid Glass title bar */
+  .window-titlebar {
+    height: 38px;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    display: flex; align-items: center; padding: 0 12px;
+    position: relative; cursor: grab; flex-shrink: 0;
+  }
+  .window-titlebar:active { cursor: grabbing; }
+  .window-titlebar::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--iridescent);
+    pointer-events: none; opacity: 0.4; border-radius: 14px 14px 0 0;
+  }
+
+  .traffic-lights { display: flex; gap: 8px; align-items: center; z-index: 1; }
+  .tl { width: 13px; height: 13px; border-radius: 50%; cursor: pointer; transition: filter 0.15s; position: relative; }
+  .tl:hover { filter: brightness(0.85); }
+  .tl-close { background: radial-gradient(circle at 35% 35%, #ff8f8f, #ff5f57); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2); }
+  .tl-min   { background: radial-gradient(circle at 35% 35%, #ffdd7e, #febc2e); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2); }
+  .tl-max   { background: radial-gradient(circle at 35% 35%, #74e878, #28c840); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.2); }
+  .tl-close::after { content: '✕'; font-size: 8px; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0; color: rgba(0,0,0,0.5); }
+  .tl-min::after   { content: '–'; font-size: 9px; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0; color: rgba(0,0,0,0.5); }
+  .tl-max::after   { content: '+'; font-size: 9px; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0; color: rgba(0,0,0,0.5); }
+  .traffic-lights:hover .tl::after { opacity: 1; }
+
+  .window-title {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    white-space: nowrap; pointer-events: none;
+  }
+
+  .window-body {
+    flex: 1; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+
+  /* Glass window bg */
+  .window-glass {
+    background: rgba(20,20,32,0.72);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    flex: 1; overflow: hidden; display: flex; flex-direction: column;
+  }
+
+  /* ─── FINDER WINDOW ─── */
+  #finder-window { width: 720px; height: 460px; top: 60px; left: 80px; z-index: 10; }
+  .finder-sidebar {
+    width: 180px; flex-shrink: 0;
+    background: rgba(255,255,255,0.05);
+    border-right: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 8px;
+    display: flex; flex-direction: column; gap: 2px; overflow-y: auto;
+  }
+  .finder-main { flex: 1; padding: 12px; overflow-y: auto; }
+  .sidebar-section { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 8px 4px; }
+  .sidebar-item {
+    padding: 5px 10px; border-radius: 7px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.8);
+    cursor: pointer; transition: background 0.12s;
+  }
+  .sidebar-item:hover { background: rgba(255,255,255,0.1); }
+  .sidebar-item.active { background: var(--accent); color: white; }
+  .sidebar-item .si-icon { font-size: 14px; width: 18px; text-align: center; }
+
+  .finder-toolbar {
+    height: 42px; padding: 0 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .finder-btn {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 7px; padding: 4px 10px;
+    color: rgba(255,255,255,0.8); font-size: 12px; cursor: pointer;
+    transition: background 0.12s; font-family: var(--font);
+  }
+  .finder-btn:hover { background: rgba(255,255,255,0.2); }
+  .finder-search {
+    margin-left: auto; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 8px;
+    padding: 4px 10px; color: white; font-size: 12px;
+    font-family: var(--font); outline: none; width: 160px;
+  }
+  .finder-search::placeholder { color: rgba(255,255,255,0.4); }
+  .finder-search:focus { background: rgba(255,255,255,0.15); border-color: var(--accent); }
+
+  .finder-files {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 4px; padding: 4px;
+  }
+  .finder-file {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px; padding: 10px 6px; border-radius: 8px;
+    cursor: pointer; transition: background 0.12s;
+  }
+  .finder-file:hover { background: rgba(255,255,255,0.08); }
+  .finder-file.selected { background: rgba(0,122,255,0.3); }
+  .finder-file .ff-icon { font-size: 36px; }
+  .finder-file .ff-name { font-size: 11px; color: rgba(255,255,255,0.85); text-align: center; line-height: 1.2; }
+  .finder-status { height: 28px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; padding: 0 12px; font-size: 11px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+
+  /* ─── SAFARI WINDOW ─── */
+  #safari-window { width: 800px; height: 500px; top: 80px; left: 160px; z-index: 9; display: none; }
+  .safari-bar {
+    height: 44px; padding: 0 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .safari-nav-btn {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    font-size: 14px; cursor: pointer; padding: 4px;
+    border-radius: 5px; transition: background 0.1s, color 0.1s;
+    font-family: var(--font);
+  }
+  .safari-nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+  .safari-url {
+    flex: 1; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12); border-radius: 9px;
+    padding: 5px 12px; color: white; font-size: 13px;
+    font-family: var(--font); outline: none; text-align: center;
+  }
+  .safari-url:focus { background: rgba(255,255,255,0.15); border-color: var(--accent); text-align: left; }
+  .safari-body { flex: 1; background: #f8f8f8; overflow: hidden; position: relative; }
+  .safari-page {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    padding: 20px; font-family: var(--font);
+    background: #f8f8f8; color: #111; overflow-y: auto;
+  }
+  .safari-loading {
+    position: absolute; top: 0; left: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    animation: pageLoad 1.2s ease-out forwards;
+    display: none;
+  }
+  @keyframes pageLoad { from { width: 0; } to { width: 100%; } }
+
+  /* ─── NOTES WINDOW ─── */
+  #notes-window { width: 580px; height: 420px; top: 100px; left: 300px; z-index: 8; display: none; }
+  .notes-sidebar { width: 200px; background: rgba(255,255,255,0.04); border-right: 1px solid rgba(255,255,255,0.08); overflow-y: auto; }
+  .notes-list-item { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.1s; }
+  .notes-list-item:hover { background: rgba(255,255,255,0.06); }
+  .notes-list-item.active { background: rgba(255,200,50,0.15); }
+  .nli-title { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); }
+  .nli-preview { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nli-date { font-size: 10px; color: rgba(255,255,255,0.3); margin-top: 3px; }
+  .notes-editor {
+    flex: 1; display: flex; flex-direction: column; padding: 16px;
+    background: rgba(255, 248, 220, 0.06);
+  }
+  .notes-textarea {
+    flex: 1; background: none; border: none; outline: none;
+    color: rgba(255,255,255,0.9); font-size: 14px; font-family: var(--font);
+    line-height: 1.7; resize: none;
+  }
+
+  /* ─── TERMINAL WINDOW ─── */
+  #terminal-window { width: 620px; height: 380px; top: 120px; left: 200px; z-index: 7; display: none; }
+  .terminal-body {
+    flex: 1; background: rgba(0,0,0,0.82); padding: 12px 16px;
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 13px; overflow-y: auto; color: #e0e0e0;
+  }
+  .term-line { margin: 1px 0; line-height: 1.5; }
+  .term-prompt { color: #5af78e; }
+  .term-cmd { color: #e0e0e0; }
+  .term-output { color: #a0a0a0; }
+  .term-error { color: #ff5f57; }
+  .term-input-line { display: flex; align-items: center; gap: 0; margin-top: 2px; }
+  #term-input {
+    background: none; border: none; outline: none;
+    color: #e0e0e0; font-family: inherit; font-size: inherit;
+    flex: 1; caret-color: #5af78e;
+  }
+
+  /* ─── DOCK ─── */
+  #dock {
+    position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: flex-end; gap: 6px;
+    padding: 8px 16px 6px;
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.32);
+    border-radius: 22px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35), 0 2px 0 rgba(255,255,255,0.12) inset, 0 -1px 0 rgba(0,0,0,0.12) inset;
+    z-index: 999;
+    transition: transform 0.2s;
+  }
+  #dock::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: 22px;
+    background: var(--iridescent); opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .dock-app {
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .dock-app:hover { transform: translateY(-12px) scale(1.18); }
+  .dock-app:hover .dock-label { opacity: 1; transform: translateY(0); }
+  .dock-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    position: relative; overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .dock-icon::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg, rgba(255,255,255,0.35) 0%, transparent 55%);
+    border-radius: 14px; pointer-events: none;
+  }
+  .dock-label {
+    position: absolute; bottom: calc(100% + 58px); left: 50%; transform: translateX(-50%) translateY(4px);
+    background: rgba(30,30,40,0.82); backdrop-filter: blur(20px);
+    color: white; font-size: 12px; font-weight: 500;
+    padding: 4px 10px; border-radius: 7px;
+    white-space: nowrap; opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    pointer-events: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .dock-label::after {
+    content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(30,30,40,0.82);
+  }
+  .dock-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: rgba(255,255,255,0.7); margin-top: 4px;
+    transition: opacity 0.2s;
+  }
+  .dock-dot.hidden { opacity: 0; }
+
+  .dock-sep { width: 1px; height: 46px; background: rgba(255,255,255,0.2); margin: 0 4px; border-radius: 1px; }
+
+  /* Bounce animation */
+  @keyframes dockBounce {
+    0%,100% { transform: translateY(0); }
+    30%      { transform: translateY(-20px); }
+    60%      { transform: translateY(-8px); }
+    80%      { transform: translateY(-14px); }
+  }
+  .dock-app.bouncing .dock-icon { animation: dockBounce 0.7s ease-in-out 3; }
+
+  /* ─── SPOTLIGHT ─── */
+  #spotlight-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    z-index: 3000; display: none;
+    align-items: center; justify-content: center;
+    padding-top: 120px;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  #spotlight-overlay.show { display: flex; }
+
+  #spotlight-box {
+    width: 640px;
+    background: rgba(28,28,38,0.78);
+    backdrop-filter: blur(60px) saturate(200%);
+    -webkit-backdrop-filter: blur(60px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px;
+    box-shadow: 0 32px 100px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.3);
+    overflow: hidden;
+    animation: spotlightIn 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes spotlightIn {
+    from { opacity: 0; transform: scale(0.94); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  #spotlight-input-wrap {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  #spotlight-input-wrap .sp-icon { font-size: 18px; opacity: 0.5; }
+  #spotlight-input {
+    flex: 1; background: none; border: none; outline: none;
+    color: white; font-size: 20px; font-family: var(--font); font-weight: 400;
+  }
+  #spotlight-input::placeholder { color: rgba(255,255,255,0.35); }
+  #spotlight-results { padding: 8px; max-height: 340px; overflow-y: auto; }
+  .sp-result {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 12px; border-radius: 9px;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .sp-result:hover, .sp-result.sp-selected { background: var(--accent); }
+  .sp-result .sp-r-icon { font-size: 22px; width: 30px; text-align: center; }
+  .sp-result .sp-r-name { font-size: 14px; font-weight: 500; color: white; }
+  .sp-result .sp-r-type { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+  .sp-category { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 12px 4px; }
+
+  /* ─── NOTIFICATION CENTER ─── */
+  #notif-panel {
+    position: absolute; top: 28px; right: 0; width: 320px;
+    height: calc(100vh - 28px - 80px);
+    background: rgba(20,20,30,0.72);
+    backdrop-filter: blur(50px) saturate(180%);
+    -webkit-backdrop-filter: blur(50px) saturate(180%);
+    border-left: 1px solid rgba(255,255,255,0.1);
+    z-index: 900; display: none;
+    flex-direction: column; padding: 12px;
+    overflow-y: auto; gap: 10px;
+    animation: slideInRight 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #notif-panel.show { display: flex; }
+  @keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+  .notif-date { font-size: 22px; font-weight: 700; color: white; margin: 8px 0 4px; }
+  .notif-subdate { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 12px; }
+  .notif-card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 13px; padding: 12px;
+    backdrop-filter: blur(20px);
+  }
+  .nc-app { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .nc-title { font-size: 13px; font-weight: 600; color: white; }
+  .nc-body { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 2px; line-height: 1.4; }
+  .nc-time { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 6px; }
+
+  /* Toast notifications */
+  #toasts { position: absolute; top: 36px; right: 12px; z-index: 5000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+  .toast {
+    background: rgba(30,30,40,0.82);
+    backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 13px; padding: 12px 14px; width: 300px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    display: flex; gap: 10px; align-items: flex-start;
+    animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: all;
+  }
+  .toast.hiding { animation: toastOut 0.3s ease-in forwards; }
+  @keyframes toastIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(60px); } }
+  .toast-icon { font-size: 24px; flex-shrink: 0; }
+  .toast-app { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.04em; }
+  .toast-title { font-size: 13px; font-weight: 600; color: white; margin-top: 1px; }
+  .toast-body { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+
+  /* ─── CONTEXT MENU ─── */
+  #ctx-menu {
+    position: absolute; z-index: 9000;
+    min-width: 200px;
+    background: rgba(30,30,40,0.82);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 11px; padding: 6px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: none;
+    animation: dropIn 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #ctx-menu.show { display: block; }
+  .ctx-item {
+    padding: 6px 12px; border-radius: 7px;
+    color: rgba(255,255,255,0.9); font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 10px;
+    transition: background 0.1s;
+  }
+  .ctx-item:hover { background: var(--accent); }
+  .ctx-sep { height: 1px; background: rgba(255,255,255,0.12); margin: 4px 8px; }
+
+  /* ─── CONTROL CENTER ─── */
+  #cc-panel {
+    position: absolute; top: 28px; right: 0;
+    width: 300px;
+    background: rgba(28,28,38,0.78);
+    backdrop-filter: blur(60px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    z-index: 2000; display: none; padding: 16px;
+    gap: 10px; flex-direction: column;
+    animation: dropIn 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  #cc-panel.show { display: flex; }
+  .cc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cc-tile {
+    background: rgba(255,255,255,0.1); border-radius: 12px;
+    padding: 12px; display: flex; flex-direction: column; gap: 6px;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .cc-tile:hover { background: rgba(255,255,255,0.18); }
+  .cc-tile.on { background: rgba(255,255,255,0.9); }
+  .cc-tile.on .cc-tile-label, .cc-tile.on .cc-tile-title { color: #111; }
+  .cc-tile-icon { font-size: 20px; }
+  .cc-tile-title { font-size: 13px; font-weight: 600; color: white; }
+  .cc-tile-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .cc-slider-row { display: flex; align-items: center; gap: 10px; }
+  .cc-slider-icon { font-size: 14px; color: rgba(255,255,255,0.6); }
+  .cc-slider { flex: 1; accent-color: white; cursor: pointer; }
+  .cc-full-tile { grid-column: 1/-1; }
+
+  /* ─── LOADING SCREEN ─── */
+  #boot-screen {
+    position: absolute; inset: 0;
+    background: black; z-index: 9999;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px;
+    animation: bootFade 0.8s ease-out 2.5s forwards;
+  }
+  @keyframes bootFade { to { opacity: 0; pointer-events: none; } }
+  .boot-logo { font-size: 80px; animation: logoPop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
+  @keyframes logoPop { from { opacity:0; transform:scale(0.6); } to { opacity:1; transform:scale(1); } }
+  .boot-bar-wrap { width: 200px; height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; overflow: hidden; }
+  .boot-bar { height: 100%; background: white; border-radius: 2px; animation: bootBar 2s ease-out 0.8s both; }
+  @keyframes bootBar { from { width: 0; } to { width: 100%; } }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 3px; }
+
+  /* ─── SYSTEM SETTINGS ─── */
+  #syspref-window { width: 860px; height: 560px; top: 60px; left: 120px; z-index: 11; display: none; }
+  .sp-sidebar {
+    width: 220px; flex-shrink: 0;
+    background: rgba(0,0,0,0.25);
+    border-right: 1px solid rgba(255,255,255,0.08);
+    overflow-y: auto; padding: 12px 8px;
+  }
+  .sp-sidebar-profile {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 8px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;
+  }
+  .sp-avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: linear-gradient(135deg,#007aff,#5856d6);
+    display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+  }
+  .sp-profile-name { font-size: 13px; font-weight: 600; color: white; }
+  .sp-profile-sub  { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 1px; }
+  .sp-nav-section  { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.06em; padding: 10px 8px 4px; }
+  .sp-nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 7px 10px; border-radius: 8px;
+    font-size: 13px; color: rgba(255,255,255,0.85);
+    cursor: pointer; transition: background 0.12s;
+  }
+  .sp-nav-item:hover { background: rgba(255,255,255,0.08); }
+  .sp-nav-item.active { background: rgba(0,122,255,0.75); color: white; }
+  .sp-nav-icon {
+    width: 26px; height: 26px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .sp-content { flex: 1; overflow-y: auto; padding: 24px 28px; }
+  .sp-section-title { font-size: 22px; font-weight: 700; color: white; margin-bottom: 20px; }
+  .sp-card {
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; margin-bottom: 12px; overflow: hidden;
+  }
+  .sp-row {
+    display: flex; align-items: center; padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06); gap: 12px;
+  }
+  .sp-row:last-child { border-bottom: none; }
+  .sp-row-label { font-size: 13px; color: rgba(255,255,255,0.85); flex: 1; }
+  .sp-row-sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; }
+  .sp-row-value { font-size: 13px; color: rgba(255,255,255,0.4); }
+  .sp-toggle {
+    width: 40px; height: 24px; border-radius: 12px;
+    background: rgba(255,255,255,0.2); cursor: pointer;
+    position: relative; transition: background 0.2s; flex-shrink: 0;
+  }
+  .sp-toggle.on { background: #30d158; }
+  .sp-toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; border-radius: 50%; background: white;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .sp-toggle.on::after { transform: translateX(16px); }
+  .sp-chevron { color: rgba(255,255,255,0.3); font-size: 12px; }
+  .sp-accent-grid { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 0; }
+  .sp-accent-dot {
+    width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+    transition: transform 0.15s; position: relative;
+  }
+  .sp-accent-dot:hover { transform: scale(1.15); }
+  .sp-accent-dot.selected::after {
+    content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: white; font-weight: 700;
+  }
+  .sp-wallpaper-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+  .sp-wp-thumb {
+    aspect-ratio: 16/10; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s;
+    overflow: hidden; position: relative;
+  }
+  .sp-wp-thumb:hover { transform: scale(1.04); }
+  .sp-wp-thumb.selected { border-color: var(--accent); }
+  .sp-wp-thumb::after { content: ''; position: absolute; inset: 0; border-radius: 6px; }
+
+  /* ─── ABOUT THIS MAC ─── */
+  #about-mac-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(12px);
+    z-index: 8000; display: none; align-items: center; justify-content: center;
+  }
+  #about-mac-overlay.show { display: flex; }
+  #about-mac-box {
+    width: 460px; border-radius: 16px; overflow: hidden;
+    background: rgba(28,28,38,0.92); backdrop-filter: blur(60px);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+    animation: windowOpen 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .about-titlebar {
+    height: 38px; background: rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; padding: 0 14px; gap: 8px;
+  }
+  .about-body { padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .about-chip { font-size: 70px; filter: drop-shadow(0 4px 20px rgba(0,122,255,0.4)); }
+  .about-model { font-size: 18px; font-weight: 700; color: white; margin-top: 4px; }
+  .about-os { font-size: 14px; color: rgba(255,255,255,0.6); }
+  .about-specs {
+    width: 100%; background: rgba(255,255,255,0.07); border-radius: 12px;
+    margin-top: 12px; overflow: hidden;
+  }
+  .about-spec-row {
+    display: flex; padding: 9px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07); gap: 16px;
+  }
+  .about-spec-row:last-child { border-bottom: none; }
+  .about-spec-key { font-size: 13px; color: rgba(255,255,255,0.45); width: 120px; flex-shrink: 0; }
+  .about-spec-val { font-size: 13px; color: rgba(255,255,255,0.9); }
+  .about-close-btn {
+    margin-top: 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 7px 20px; color: white; font-size: 13px;
+    cursor: pointer; font-family: var(--font); transition: background 0.15s;
+  }
+  .about-close-btn:hover { background: rgba(255,255,255,0.2); }
+
+  /* ─── CALCULATOR ─── */
+  #calc-window { width: 280px; height: 420px; top: 120px; left: 500px; z-index: 12; display: none; }
+  .calc-display {
+    background: rgba(0,0,0,0.4); padding: 16px 16px 8px;
+    text-align: right; flex-shrink: 0;
+  }
+  .calc-expression { font-size: 13px; color: rgba(255,255,255,0.4); min-height: 18px; margin-bottom: 2px; }
+  .calc-result { font-size: 42px; font-weight: 200; color: white; line-height: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; flex: 1; background: rgba(0,0,0,0.2); }
+  .calc-btn {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 400; cursor: pointer;
+    transition: filter 0.1s; border: none; font-family: var(--font);
+    color: white; padding: 0;
+  }
+  .calc-btn:hover { filter: brightness(1.2); }
+  .calc-btn:active { filter: brightness(0.8); }
+  .calc-btn.fn  { background: rgba(100,100,110,0.7); font-size: 15px; color: rgba(255,255,255,0.9); }
+  .calc-btn.op  { background: rgba(255,149,0,0.9); }
+  .calc-btn.op.active-op { background: white; color: #ff9500; }
+  .calc-btn.num { background: rgba(58,58,60,0.9); }
+  .calc-btn.zero { grid-column: span 2; justify-content: flex-start; padding-left: 26px; font-size: 20px; }
+  .calc-btn.eq  { background: #ff9500; }
+
+  /* ─── CALENDAR ─── */
+  #calendar-window { width: 680px; height: 480px; top: 80px; left: 180px; z-index: 9; display: none; }
+  .cal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
+  }
+  .cal-nav-btn {
+    background: rgba(255,255,255,0.1); border: none; color: white;
+    width: 28px; height: 28px; border-radius: 50%; font-size: 14px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.12s; font-family: var(--font);
+  }
+  .cal-nav-btn:hover { background: rgba(255,255,255,0.2); }
+  .cal-month-title { font-size: 18px; font-weight: 700; color: white; }
+  .cal-grid-header { display: grid; grid-template-columns: repeat(7,1fr); padding: 0 12px; }
+  .cal-day-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.35); text-align: center; padding: 6px 0; text-transform: uppercase; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); padding: 0 12px 12px; flex: 1; gap: 2px; }
+  .cal-cell {
+    aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    padding-top: 6px; border-radius: 10px; cursor: pointer; transition: background 0.1s;
+    position: relative; font-size: 13px; color: rgba(255,255,255,0.75);
+  }
+  .cal-cell:hover { background: rgba(255,255,255,0.08); }
+  .cal-cell.today .cal-cell-num { background: var(--accent); color: white; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .cal-cell.selected { background: rgba(0,122,255,0.2); }
+  .cal-cell.other-month { color: rgba(255,255,255,0.2); }
+  .cal-event-dot { width: 5px; height: 5px; border-radius: 50%; margin-top: 2px; }
+  .cal-sidebar {
+    width: 200px; border-left: 1px solid rgba(255,255,255,0.08);
+    padding: 16px; overflow-y: auto; flex-shrink: 0;
+  }
+  .cal-sidebar-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.5); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+  .cal-event-item { padding: 8px 10px; border-radius: 8px; margin-bottom: 6px; cursor: pointer; }
+  .cal-event-title { font-size: 12px; font-weight: 600; color: white; }
+  .cal-event-time  { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+
+  /* ─── MUSIC PLAYER ─── */
+  #music-window { width: 700px; height: 460px; top: 90px; left: 140px; z-index: 10; display: none; }
+  .music-sidebar {
+    width: 200px; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.07);
+    padding: 12px 8px; overflow-y: auto; flex-shrink: 0;
+  }
+  .music-nav-section { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 8px 4px; }
+  .music-nav-item { padding: 6px 10px; border-radius: 7px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.1s; }
+  .music-nav-item:hover { background: rgba(255,255,255,0.08); }
+  .music-nav-item.active { background: rgba(255,255,255,0.12); color: white; }
+  .music-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .music-now-playing {
+    padding: 20px; display: flex; align-items: center; gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.07); flex-shrink: 0;
+  }
+  .music-album-art {
+    width: 60px; height: 60px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .music-track-name { font-size: 15px; font-weight: 600; color: white; }
+  .music-track-artist { font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .music-controls { display: flex; align-items: center; gap: 20px; margin-top: 10px; }
+  .music-btn { background: none; border: none; color: white; font-size: 18px; cursor: pointer; opacity: 0.7; transition: opacity 0.1s; font-family: var(--font); }
+  .music-btn:hover { opacity: 1; }
+  .music-btn.play { font-size: 24px; opacity: 1; }
+  .music-progress-wrap { display: flex; align-items: center; gap: 8px; }
+  .music-progress-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.2); border-radius: 2px; cursor: pointer; position: relative; }
+  .music-progress-fill { height: 100%; background: white; border-radius: 2px; transition: width 0.5s linear; }
+  .music-time { font-size: 11px; color: rgba(255,255,255,0.4); font-variant-numeric: tabular-nums; }
+  .music-track-list { flex: 1; overflow-y: auto; }
+  .music-track-row {
+    display: flex; align-items: center; padding: 8px 16px; gap: 12px;
+    cursor: pointer; transition: background 0.1s; border-radius: 6px; margin: 0 8px 2px;
+  }
+  .music-track-row:hover { background: rgba(255,255,255,0.06); }
+  .music-track-row.playing { background: rgba(255,59,48,0.15); }
+  .music-track-num { font-size: 12px; color: rgba(255,255,255,0.3); width: 20px; text-align: right; flex-shrink: 0; }
+  .music-track-info { flex: 1; overflow: hidden; }
+  .music-track-t { font-size: 13px; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .music-track-a { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .music-track-dur { font-size: 12px; color: rgba(255,255,255,0.35); flex-shrink: 0; }
+
+  /* Wallpaper themes */
+  .wp-tahoe    { background: linear-gradient(160deg,#0b0f2a,#1a1060,#0d1f3a); }
+  .wp-sonoma   { background: linear-gradient(135deg,#8B4513,#D2691E,#F4A460,#87CEEB); }
+  .wp-ventura  { background: linear-gradient(135deg,#ff6b35,#f7c59f,#efefd0,#004e89); }
+  .wp-monterey { background: linear-gradient(135deg,#00c6ff,#0072ff,#00c6ff); }
+  .wp-bigsur   { background: linear-gradient(135deg,#667eea,#764ba2); }
+  .wp-sequoia  { background: linear-gradient(135deg,#134e5e,#71b280); }
+  .wp-tahoe2   { background: radial-gradient(ellipse at 30% 40%,rgba(80,160,255,0.7),transparent 60%),linear-gradient(160deg,#050a1a,#0d1840); }
+  .wp-space    { background: linear-gradient(135deg,#0f0c29,#302b63,#24243e); }
+
+  /* Resize handle */
+  .resize-handle { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; cursor: se-resize; z-index: 10; }
+
+  /* Selection box */
+  #selection-box {
+    position: absolute; border: 1px solid rgba(0,122,255,0.7);
+    background: rgba(0,122,255,0.12); pointer-events: none; z-index: 500; display: none;
+  }
+
+  /* ─── MAIL ─── */
+  #mail-window { width: 820px; height: 540px; top: 65px; left: 100px; z-index: 13; display: none; }
+  .mail-sidebar {
+    width: 200px; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.07);
+    padding: 10px 6px; overflow-y: auto; flex-shrink: 0;
+  }
+  .mail-inbox-pane {
+    width: 280px; border-right: 1px solid rgba(255,255,255,0.07);
+    display: flex; flex-direction: column; flex-shrink: 0;
+  }
+  .mail-inbox-header {
+    padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+  }
+  .mail-inbox-title { font-size: 15px; font-weight: 700; color: white; }
+  .mail-inbox-count { font-size: 11px; background: var(--accent); color: white; border-radius: 10px; padding: 1px 7px; }
+  .mail-search { margin: 8px 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 5px 10px; color: white; font-size: 12px; font-family: var(--font); outline: none; }
+  .mail-search::placeholder { color: rgba(255,255,255,0.35); }
+  .mail-msg-row {
+    padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer; transition: background 0.1s; flex-shrink: 0;
+  }
+  .mail-msg-row:hover { background: rgba(255,255,255,0.06); }
+  .mail-msg-row.active { background: rgba(0,122,255,0.2); }
+  .mail-msg-row.unread .mail-msg-from::before {
+    content: ''; display: inline-block; width: 8px; height: 8px; background: var(--accent);
+    border-radius: 50%; margin-right: 6px; flex-shrink: 0;
+  }
+  .mail-msg-from { font-size: 13px; font-weight: 600; color: white; display: flex; align-items: center; }
+  .mail-msg-subj { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail-msg-prev { font-size: 11px; color: rgba(255,255,255,0.35); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail-msg-time { font-size: 11px; color: rgba(255,255,255,0.3); float: right; margin-top: -18px; }
+  .mail-reader { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+  .mail-reader-from { font-size: 13px; font-weight: 700; color: white; margin-bottom: 2px; }
+  .mail-reader-subj { font-size: 18px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .mail-reader-meta { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .mail-reader-body { font-size: 14px; color: rgba(255,255,255,0.8); line-height: 1.8; }
+  .mail-compose-bar { padding: 8px 10px; border-top: 1px solid rgba(255,255,255,0.07); display: flex; gap: 6px; flex-shrink: 0; }
+  .mail-compose-btn { background: var(--accent); border: none; border-radius: 8px; padding: 6px 14px; color: white; font-size: 12px; cursor: pointer; font-family: var(--font); transition: filter 0.1s; }
+  .mail-compose-btn:hover { filter: brightness(1.15); }
+  .mail-nav-section { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 8px 4px; }
+  .mail-nav-item { padding: 6px 10px; border-radius: 7px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.1s; }
+  .mail-nav-item:hover { background: rgba(255,255,255,0.08); }
+  .mail-nav-item.active { background: rgba(255,255,255,0.12); color: white; }
+  .mail-badge { margin-left: auto; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 1px 6px; font-size: 11px; color: rgba(255,255,255,0.6); }
+
+  /* ─── PHOTOS ─── */
+  #photos-window { width: 760px; height: 500px; top: 70px; left: 130px; z-index: 11; display: none; }
+  .photos-sidebar { width: 190px; background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.07); padding: 10px 8px; overflow-y: auto; flex-shrink: 0; }
+  .photos-main { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; }
+  .photos-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; flex-shrink: 0; }
+  .photos-section-title { font-size: 22px; font-weight: 700; color: white; flex: 1; }
+  .photos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 4px; }
+  .photo-thumb {
+    aspect-ratio: 1; border-radius: 6px; overflow: hidden; cursor: pointer;
+    transition: transform 0.15s, filter 0.15s; position: relative;
+  }
+  .photo-thumb:hover { transform: scale(1.04); filter: brightness(1.1); }
+  .photo-thumb.selected::after { content: '✓'; position: absolute; top: 6px; right: 6px; background: var(--accent); color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .photos-nav-section { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 8px 4px; }
+  .photos-nav-item { padding: 6px 10px; border-radius: 7px; font-size: 13px; color: rgba(255,255,255,0.75); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.1s; }
+  .photos-nav-item:hover { background: rgba(255,255,255,0.08); }
+  .photos-nav-item.active { background: rgba(255,255,255,0.12); color: white; }
+
+  /* ─── LAUNCHPAD ─── */
+  #launchpad-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(40px) saturate(180%);
+    z-index: 4000; display: none;
+    flex-direction: column; align-items: center;
+    padding-top: 40px;
+  }
+  #launchpad-overlay.show { display: flex; }
+  #launchpad-search-wrap { margin-bottom: 24px; }
+  #launchpad-search {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px; padding: 8px 18px; color: white; font-size: 15px;
+    font-family: var(--font); outline: none; width: 220px; text-align: center;
+  }
+  #launchpad-search::placeholder { color: rgba(255,255,255,0.4); }
+  #launchpad-grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 20px 12px; max-width: 820px; padding: 0 20px;
+  }
+  .lp-icon {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer; padding: 10px 6px; border-radius: 16px;
+    transition: background 0.15s;
+  }
+  .lp-icon:hover { background: rgba(255,255,255,0.1); }
+  .lp-icon-img {
+    width: 64px; height: 64px; border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .lp-icon:hover .lp-icon-img { transform: scale(1.12); }
+  .lp-icon-img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg,rgba(255,255,255,0.3) 0%,transparent 60%); border-radius: 16px; }
+  .lp-icon-label { font-size: 12px; color: rgba(255,255,255,0.88); text-align: center; text-shadow: 0 1px 3px rgba(0,0,0,0.6); max-width: 74px; line-height: 1.2; }
+  #lp-page-dots { display: flex; gap: 8px; margin-top: 24px; }
+  .lp-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); cursor: pointer; transition: background 0.15s; }
+  .lp-dot.active { background: white; }
+
+  /* ─── MISSION CONTROL ─── */
+  #mission-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(20px);
+    z-index: 3500; display: none;
+    flex-direction: column;
+    padding: 60px 40px 100px;
+    gap: 20px;
+  }
+  #mission-overlay.show { display: flex; animation: missionIn 0.3s ease-out; }
+  @keyframes missionIn { from { opacity: 0; } to { opacity: 1; } }
+  #mission-spaces { display: flex; gap: 12px; justify-content: center; margin-bottom: 10px; flex-shrink: 0; }
+  .mission-space-thumb {
+    width: 120px; height: 80px; border-radius: 8px;
+    background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
+    cursor: pointer; overflow: hidden; position: relative;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .mission-space-thumb.active { border-color: var(--accent); }
+  .mission-space-thumb:hover { transform: scale(1.05); }
+  .mission-space-label { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 11px; color: rgba(255,255,255,0.7); }
+  #mission-title { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.06em; text-align: center; }
+  #mission-windows { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; align-items: center; flex: 1; }
+  .mission-win-card {
+    background: rgba(20,20,30,0.8); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; cursor: pointer; overflow: hidden;
+    transition: transform 0.2s, border-color 0.15s; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .mission-win-card:hover { transform: scale(1.04); border-color: rgba(255,255,255,0.35); }
+  .mission-win-title { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); font-size: 12px; color: white; padding: 5px 10px; text-align: center; backdrop-filter: blur(10px); }
+  .mission-win-header { height: 18px; background: rgba(255,255,255,0.08); display: flex; align-items: center; padding: 0 8px; gap: 4px; }
+  .mission-win-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ─── SIRI ─── */
+  #siri-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(6px);
+    z-index: 7000; display: none;
+    align-items: flex-end; justify-content: center;
+    padding-bottom: 100px;
+  }
+  #siri-overlay.show { display: flex; }
+  #siri-panel {
+    background: rgba(28,28,40,0.92);
+    backdrop-filter: blur(60px) saturate(200%);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 22px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    padding: 24px 30px 20px;
+    width: 400px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+    animation: siriIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes siriIn { from { opacity:0; transform: scale(0.9) translateY(20px); } to { opacity:1; transform: scale(1) translateY(0); } }
+  #siri-orb {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: conic-gradient(#007aff, #5856d6, #ff2d55, #ff9500, #30d158, #007aff);
+    animation: siriSpin 3s linear infinite;
+    box-shadow: 0 0 40px rgba(0,122,255,0.5);
+    position: relative;
+  }
+  #siri-orb::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: rgba(28,28,40,0.9); }
+  @keyframes siriSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  #siri-text { font-size: 18px; font-weight: 600; color: white; text-align: center; min-height: 28px; }
+  #siri-sub { font-size: 13px; color: rgba(255,255,255,0.5); text-align: center; }
+  #siri-input-row { display: flex; gap: 8px; width: 100%; }
+  #siri-input {
+    flex: 1; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px; padding: 8px 14px; color: white; font-size: 14px;
+    font-family: var(--font); outline: none;
+  }
+  #siri-input::placeholder { color: rgba(255,255,255,0.3); }
+  #siri-send { background: var(--accent); border: none; border-radius: 10px; padding: 8px 14px; color: white; font-size: 14px; cursor: pointer; font-family: var(--font); }
+  #siri-response { font-size: 14px; color: rgba(255,255,255,0.8); text-align: center; min-height: 20px; line-height: 1.5; }
+
+  /* ─── WEATHER ─── */
+  #weather-window { width: 360px; height: 460px; top: 80px; left: 600px; z-index: 14; display: none; }
+  .weather-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+  .weather-hero {
+    padding: 24px 24px 16px; flex-shrink: 0;
+    background: linear-gradient(160deg, rgba(0,60,140,0.6) 0%, rgba(30,80,200,0.3) 100%);
+  }
+  .weather-city { font-size: 22px; font-weight: 700; color: white; }
+  .weather-cond { font-size: 14px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+  .weather-temp { font-size: 64px; font-weight: 100; color: white; line-height: 1; margin: 8px 0; }
+  .weather-hl { font-size: 14px; color: rgba(255,255,255,0.6); }
+  .weather-hourly { display: flex; gap: 4px; overflow-x: auto; padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+  .weather-hour { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 12px; min-width: 54px; background: rgba(255,255,255,0.06); }
+  .weather-hour-time { font-size: 11px; color: rgba(255,255,255,0.5); }
+  .weather-hour-icon { font-size: 18px; }
+  .weather-hour-temp { font-size: 13px; font-weight: 600; color: white; }
+  .weather-daily { padding: 12px 16px; flex: 1; }
+  .weather-day-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 8px; }
+  .weather-day-name { font-size: 13px; color: rgba(255,255,255,0.75); width: 80px; flex-shrink: 0; }
+  .weather-day-icon { font-size: 18px; width: 28px; text-align: center; }
+  .weather-day-low  { font-size: 13px; color: rgba(255,255,255,0.4); width: 30px; text-align: right; }
+  .weather-day-bar  { flex: 1; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); position: relative; }
+  .weather-day-fill { position: absolute; height: 100%; border-radius: 2px; background: linear-gradient(90deg,#00c6ff,#ff9500); }
+  .weather-day-high { font-size: 13px; color: white; width: 30px; text-align: left; }
+  .weather-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 16px; }
+  .weather-stat { background: rgba(255,255,255,0.07); border-radius: 12px; padding: 12px; }
+  .weather-stat-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .weather-stat-val { font-size: 18px; font-weight: 600; color: white; }
+  .weather-stat-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+  /* ─── LOCK SCREEN ─── */
+  #lock-screen {
+    position: absolute; inset: 0;
+    background: linear-gradient(160deg,#0b0f2a,#1a1060,#0d1f3a);
+    z-index: 9500; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  #lock-screen.show { display: flex; animation: lockIn 0.4s ease-out; }
+  @keyframes lockIn { from { opacity:0; } to { opacity:1; } }
+  .lock-time { font-size: 88px; font-weight: 100; color: white; line-height: 1; letter-spacing: -4px; }
+  .lock-date { font-size: 20px; font-weight: 400; color: rgba(255,255,255,0.7); }
+  .lock-hint { font-size: 14px; color: rgba(255,255,255,0.4); margin-top: 20px; }
+  .lock-password-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 16px; }
+  .lock-avatar { width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg,#007aff,#5856d6); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .lock-user { font-size: 16px; font-weight: 600; color: white; }
+  .lock-pw-input {
+    background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px; padding: 9px 18px; color: white; font-size: 16px;
+    font-family: var(--font); outline: none; text-align: center; width: 220px; letter-spacing: 4px;
+  }
+  .lock-pw-input::placeholder { letter-spacing: 0; color: rgba(255,255,255,0.35); }
+  .lock-unlock-btn { background: var(--accent); border: none; border-radius: 10px; padding: 9px 28px; color: white; font-size: 14px; cursor: pointer; font-family: var(--font); font-weight: 600; transition: filter 0.1s; }
+  .lock-unlock-btn:hover { filter: brightness(1.15); }
+
+  /* ─── QUICK LOOK ─── */
+  #quicklook-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(16px);
+    z-index: 6000; display: none; align-items: center; justify-content: center;
+  }
+  #quicklook-overlay.show { display: flex; animation: dropIn 0.2s ease-out; }
+  #quicklook-box { background: rgba(28,28,38,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 24px; min-width: 340px; max-width: 500px; box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+  .ql-icon { font-size: 72px; text-align: center; margin-bottom: 12px; }
+  .ql-name { font-size: 16px; font-weight: 700; color: white; text-align: center; }
+  .ql-meta { font-size: 12px; color: rgba(255,255,255,0.4); text-align: center; margin-top: 4px; }
+  .ql-close { margin-top: 18px; display: flex; justify-content: center; }
+  .ql-close-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 7px 24px; color: white; font-size: 13px; cursor: pointer; font-family: var(--font); transition: background 0.15s; }
+  .ql-close-btn:hover { background: rgba(255,255,255,0.2); }
+</style>
+</head>
+<body>
+
+<!-- Boot screen -->
+<div id="boot-screen">
+  <div class="boot-logo">🍎</div>
+  <div class="boot-bar-wrap"><div class="boot-bar"></div></div>
+</div>
+
+<!-- Desktop -->
+<div id="desktop">
+  <div id="wallpaper"></div>
+  <div id="stars"></div>
+  <div id="mountains"></div>
+  <div id="lake"></div>
+
+  <!-- Menu Bar -->
+  <div id="menubar">
+    <div class="menu-apple" id="apple-menu-btn" onclick="toggleDropdown('apple-dd')">🍎</div>
+    <div class="menu-item" id="finder-menu-btn" onclick="toggleDropdown('finder-dd')">Finder</div>
+    <div class="menu-item" onclick="toggleDropdown('file-dd')">File</div>
+    <div class="menu-item" onclick="toggleDropdown('edit-dd')">Edit</div>
+    <div class="menu-item" onclick="toggleDropdown('view-dd')">View</div>
+    <div class="menu-item" onclick="toggleDropdown('window-dd')">Window</div>
+    <div class="menu-item" onclick="toggleDropdown('help-dd')">Help</div>
+
+    <div id="menu-right">
+      <div class="menu-icon" title="Wi-Fi">📶</div>
+      <div class="menu-icon" title="Bluetooth">🔵</div>
+      <div class="menu-icon" onclick="openWeather()" title="Weather">🌤️</div>
+      <div class="menu-icon" id="cc-btn" onclick="toggleCC()">⊞</div>
+      <div class="menu-icon" id="search-btn" onclick="openSpotlight()">🔍</div>
+      <div class="menu-icon" onclick="openSiri()" title="Siri">🎙️</div>
+      <div class="menu-icon" id="notif-btn" onclick="toggleNotif()">☰</div>
+      <div class="menu-icon" id="menu-time">12:00 PM</div>
+    </div>
+
+    <!-- Dropdowns -->
+    <div class="dropdown" id="apple-dd">
+      <div class="dropdown-item" onclick="openAbout()">About This Mac</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item" onclick="openSysPref()">System Settings…</div>
+      <div class="dropdown-item">App Store…</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Recent Items ▶</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Force Quit…</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Sleep</div>
+      <div class="dropdown-item">Restart…</div>
+      <div class="dropdown-item">Shut Down…</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item" onclick="lockScreen()">Lock Screen <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌃⌘Q</span></div>
+      <div class="dropdown-item">Log Out…</div>
+    </div>
+    <div class="dropdown" id="finder-dd" style="left:46px">
+      <div class="dropdown-item">About Finder</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Preferences…</div>
+      <div class="dropdown-item">Empty Trash…</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Services ▶</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Hide Finder</div>
+      <div class="dropdown-item">Hide Others</div>
+    </div>
+    <div class="dropdown" id="file-dd" style="left:96px">
+      <div class="dropdown-item">New Finder Window <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘N</span></div>
+      <div class="dropdown-item">New Folder <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⇧⌘N</span></div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Get Info <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘I</span></div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Move to Trash <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘⌫</span></div>
+    </div>
+    <div class="dropdown" id="edit-dd" style="left:132px">
+      <div class="dropdown-item">Undo <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘Z</span></div>
+      <div class="dropdown-item">Redo <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⇧⌘Z</span></div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Cut <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘X</span></div>
+      <div class="dropdown-item">Copy <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘C</span></div>
+      <div class="dropdown-item">Paste <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘V</span></div>
+      <div class="dropdown-item">Select All <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘A</span></div>
+    </div>
+    <div class="dropdown" id="view-dd" style="left:166px">
+      <div class="dropdown-item">as Icons <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘1</span></div>
+      <div class="dropdown-item">as List <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘2</span></div>
+      <div class="dropdown-item">as Columns <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘3</span></div>
+      <div class="dropdown-item">as Gallery <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘4</span></div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Show Tab Bar</div>
+      <div class="dropdown-item">Show Path Bar</div>
+    </div>
+    <div class="dropdown" id="window-dd" style="left:200px">
+      <div class="dropdown-item">Minimize <span style="margin-left:auto;color:rgba(255,255,255,0.4)">⌘M</span></div>
+      <div class="dropdown-item">Zoom</div>
+      <div class="dropdown-sep"></div>
+      <div class="dropdown-item">Finder</div>
+    </div>
+    <div class="dropdown" id="help-dd" style="left:248px">
+      <div class="dropdown-item">macOS Help</div>
+      <div class="dropdown-item">Keyboard Shortcuts</div>
+    </div>
   </div>
-  </body>
+
+  <!-- Desktop Icons -->
+  <div id="desktop-icons">
+    <div class="desktop-icon" ondblclick="openFinder()" onclick="selectIcon(this)">
+      <div class="icon-img">🖥️</div>
+      <div class="icon-label">Macintosh HD</div>
+    </div>
+    <div class="desktop-icon" onclick="selectIcon(this)">
+      <div class="icon-img">📸</div>
+      <div class="icon-label">Screenshot.png</div>
+    </div>
+    <div class="desktop-icon" onclick="selectIcon(this)">
+      <div class="icon-img">🗂️</div>
+      <div class="icon-label">Projects</div>
+    </div>
+  </div>
+
+  <!-- FINDER WINDOW -->
+  <div class="window" id="finder-window">
+    <div class="window-titlebar" id="finder-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('finder-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('finder-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('finder-window')"></div>
+      </div>
+      <span class="window-title">Finder</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;flex-direction:column;">
+        <div class="finder-toolbar">
+          <button class="finder-btn" onclick="finderNav(-1)">‹</button>
+          <button class="finder-btn" onclick="finderNav(1)">›</button>
+          <span id="finder-path-display" style="font-size:12px;color:rgba(255,255,255,0.5);margin-left:4px;">Home</span>
+          <button class="finder-btn" style="margin-left:8px;">⊞</button>
+          <button class="finder-btn">☰</button>
+          <input class="finder-search" type="text" placeholder="🔍 Search" id="finder-search-input" oninput="filterFiles()" />
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <div class="finder-sidebar" id="finder-sidebar">
+            <div class="sidebar-section">Favorites</div>
+            <div class="sidebar-item active" onclick="loadDir('home')"><span class="si-icon">🏠</span>Home</div>
+            <div class="sidebar-item" onclick="loadDir('desktop')"><span class="si-icon">🖥️</span>Desktop</div>
+            <div class="sidebar-item" onclick="loadDir('documents')"><span class="si-icon">📄</span>Documents</div>
+            <div class="sidebar-item" onclick="loadDir('downloads')"><span class="si-icon">⬇️</span>Downloads</div>
+            <div class="sidebar-item" onclick="loadDir('pictures')"><span class="si-icon">🖼️</span>Pictures</div>
+            <div class="sidebar-item" onclick="loadDir('music')"><span class="si-icon">🎵</span>Music</div>
+            <div class="sidebar-item" onclick="loadDir('movies')"><span class="si-icon">🎬</span>Movies</div>
+            <div class="sidebar-section" style="margin-top:8px;">Locations</div>
+            <div class="sidebar-item" onclick="loadDir('mac')"><span class="si-icon">💻</span>Macintosh HD</div>
+            <div class="sidebar-item" onclick="loadDir('icloud')"><span class="si-icon">☁️</span>iCloud Drive</div>
+            <div class="sidebar-item" onclick="loadDir('trash')"><span class="si-icon">🗑️</span>Trash</div>
+            <div class="sidebar-section" style="margin-top:8px;">Tags</div>
+            <div class="sidebar-item"><span style="display:inline-block;width:10px;height:10px;background:#ff5f57;border-radius:50%;margin-right:2px;"></span>Red</div>
+            <div class="sidebar-item"><span style="display:inline-block;width:10px;height:10px;background:#febc2e;border-radius:50%;margin-right:2px;"></span>Yellow</div>
+            <div class="sidebar-item"><span style="display:inline-block;width:10px;height:10px;background:#28c840;border-radius:50%;margin-right:2px;"></span>Green</div>
+            <div class="sidebar-item"><span style="display:inline-block;width:10px;height:10px;background:#007aff;border-radius:50%;margin-right:2px;"></span>Blue</div>
+          </div>
+          <div class="finder-main">
+            <div class="finder-files" id="finder-files"></div>
+          </div>
+        </div>
+        <div class="finder-status" id="finder-status">Loading…</div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- SAFARI WINDOW -->
+  <div class="window" id="safari-window">
+    <div class="window-titlebar" id="safari-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('safari-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('safari-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('safari-window')"></div>
+      </div>
+      <span class="window-title">Safari</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;flex-direction:column;">
+        <div class="safari-bar">
+          <button class="safari-nav-btn">‹</button>
+          <button class="safari-nav-btn">›</button>
+          <button class="safari-nav-btn">↻</button>
+          <input class="safari-url" id="safari-url" type="text" value="apple.com" onkeydown="navigateSafari(event)" />
+          <button class="safari-nav-btn">⊕</button>
+          <button class="safari-nav-btn">⊞</button>
+        </div>
+        <div class="safari-body" id="safari-body">
+          <div class="safari-loading" id="safari-loader"></div>
+          <div id="safari-page-content" style="width:100%;height:100%;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- NOTES WINDOW -->
+  <div class="window" id="notes-window">
+    <div class="window-titlebar" id="notes-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('notes-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('notes-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('notes-window')"></div>
+      </div>
+      <span class="window-title">Notes</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;">
+        <div class="notes-sidebar" id="notes-sidebar"></div>
+        <div class="notes-editor">
+          <div style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:8px;" id="notes-meta">Today at 12:00 PM</div>
+          <textarea class="notes-textarea" id="notes-body" placeholder="Start typing…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- TERMINAL WINDOW -->
+  <div class="window" id="terminal-window">
+    <div class="window-titlebar" id="terminal-titlebar" style="background:rgba(30,30,30,0.7)">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('terminal-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('terminal-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('terminal-window')"></div>
+      </div>
+      <span class="window-title">zsh — Terminal</span>
+    </div>
+    <div class="window-body">
+      <div class="terminal-body" id="terminal-body" onclick="document.getElementById('term-input').focus()">
+        <div class="term-line"><span style="color:#5af78e">Last login:</span> <span class="term-output" id="term-login-time"></span></div>
+        <div class="term-line term-output">macOS Tahoe 26.0 (Build 25A123)</div>
+        <div class="term-line">&nbsp;</div>
+        <div class="term-input-line">
+          <span class="term-prompt">user@MacBook-Pro ~ %&nbsp;</span>
+          <input type="text" id="term-input" spellcheck="false" autocomplete="off" onkeydown="termKeydown(event)" />
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- SYSTEM SETTINGS WINDOW -->
+  <div class="window" id="syspref-window">
+    <div class="window-titlebar" id="syspref-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('syspref-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('syspref-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('syspref-window')"></div>
+      </div>
+      <span class="window-title">System Settings</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;">
+        <div class="sp-sidebar" id="sp-sidebar">
+          <div class="sp-sidebar-profile">
+            <div class="sp-avatar">👤</div>
+            <div><div class="sp-profile-name">Alex Johnson</div><div class="sp-profile-sub">Apple ID · iCloud</div></div>
+          </div>
+          <div id="sp-nav"></div>
+        </div>
+        <div class="sp-content" id="sp-content"></div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- CALCULATOR WINDOW -->
+  <div class="window" id="calc-window">
+    <div class="window-titlebar" id="calc-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('calc-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('calc-window')"></div>
+        <div class="tl tl-max"></div>
+      </div>
+      <span class="window-title">Calculator</span>
+    </div>
+    <div class="window-body">
+      <div style="flex:1;display:flex;flex-direction:column;background:rgba(18,18,22,0.95);">
+        <div class="calc-display">
+          <div class="calc-expression" id="calc-expr"></div>
+          <div class="calc-result" id="calc-result">0</div>
+        </div>
+        <div class="calc-buttons" id="calc-buttons"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALENDAR WINDOW -->
+  <div class="window" id="calendar-window">
+    <div class="window-titlebar" id="calendar-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('calendar-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('calendar-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('calendar-window')"></div>
+      </div>
+      <span class="window-title">Calendar</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;flex-direction:column;">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+          <span class="cal-month-title" id="cal-month-title"></span>
+          <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+          <button class="cal-nav-btn" style="margin-left:8px;width:auto;padding:0 10px;border-radius:8px;font-size:12px;" onclick="calGoToday()">Today</button>
+        </div>
+        <div style="display:flex;flex:1;overflow:hidden;">
+          <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+            <div class="cal-grid-header" id="cal-grid-header"></div>
+            <div class="cal-grid" id="cal-grid"></div>
+          </div>
+          <div class="cal-sidebar" id="cal-sidebar"></div>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- MUSIC WINDOW -->
+  <div class="window" id="music-window">
+    <div class="window-titlebar" id="music-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('music-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('music-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('music-window')"></div>
+      </div>
+      <span class="window-title">Music</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;">
+        <div class="music-sidebar">
+          <div class="music-nav-section">Library</div>
+          <div class="music-nav-item active" onclick="musicNav(this,'library')">🎵 Songs</div>
+          <div class="music-nav-item" onclick="musicNav(this,'albums')">💿 Albums</div>
+          <div class="music-nav-item" onclick="musicNav(this,'artists')">🎤 Artists</div>
+          <div class="music-nav-section">Playlists</div>
+          <div class="music-nav-item" onclick="musicNav(this,'chill')">🌊 Chill Vibes</div>
+          <div class="music-nav-item" onclick="musicNav(this,'focus')">🎯 Deep Focus</div>
+          <div class="music-nav-item" onclick="musicNav(this,'workout')">💪 Workout Mix</div>
+          <div class="music-nav-section">Radio</div>
+          <div class="music-nav-item" onclick="musicNav(this,'radio')">📻 Apple Music 1</div>
+        </div>
+        <div class="music-main">
+          <div class="music-now-playing" id="music-now-playing-bar">
+            <div class="music-album-art" id="music-art" style="background:linear-gradient(135deg,#fc3c44,#ff6b9d)">🎵</div>
+            <div style="flex:1;min-width:0;">
+              <div class="music-track-name" id="music-track-name">Blinding Lights</div>
+              <div class="music-track-artist" id="music-track-artist">The Weeknd · After Hours</div>
+              <div class="music-controls">
+                <button class="music-btn" onclick="musicShuffle()">⇄</button>
+                <button class="music-btn" onclick="musicPrev()">⏮</button>
+                <button class="music-btn play" id="music-play-btn" onclick="musicToggle()">⏸</button>
+                <button class="music-btn" onclick="musicNext()">⏭</button>
+                <button class="music-btn">↻</button>
+              </div>
+              <div class="music-progress-wrap" style="margin-top:8px;">
+                <span class="music-time" id="music-elapsed">1:24</span>
+                <div class="music-progress-bar" onclick="musicSeek(event)">
+                  <div class="music-progress-fill" id="music-fill" style="width:35%"></div>
+                </div>
+                <span class="music-time" id="music-duration">3:20</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-left:8px;">
+              <span style="font-size:14px;color:rgba(255,255,255,0.4);">🔊</span>
+              <input type="range" style="width:70px;accent-color:white;" min="0" max="100" value="70" />
+            </div>
+          </div>
+          <div class="music-track-list" id="music-track-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- ABOUT THIS MAC -->
+  <div id="about-mac-overlay">
+    <div id="about-mac-box">
+      <div class="about-titlebar">
+        <div class="traffic-lights">
+          <div class="tl tl-close" onclick="closeAbout()"></div>
+          <div class="tl tl-min" style="pointer-events:none;opacity:0.4"></div>
+          <div class="tl tl-max" style="pointer-events:none;opacity:0.4"></div>
+        </div>
+      </div>
+      <div class="about-body">
+        <div class="about-chip">💻</div>
+        <div class="about-model">MacBook Pro</div>
+        <div class="about-os">macOS Tahoe 26.0</div>
+        <div class="about-specs">
+          <div class="about-spec-row"><span class="about-spec-key">Chip</span><span class="about-spec-val">Apple M4 Pro</span></div>
+          <div class="about-spec-row"><span class="about-spec-key">Memory</span><span class="about-spec-val">24 GB</span></div>
+          <div class="about-spec-row"><span class="about-spec-key">Storage</span><span class="about-spec-val">512 GB SSD</span></div>
+          <div class="about-spec-row"><span class="about-spec-key">Serial Number</span><span class="about-spec-val">C02ZM4T2MD6R</span></div>
+          <div class="about-spec-row"><span class="about-spec-key">macOS</span><span class="about-spec-val">Tahoe 26.0 (Build 25A123)</span></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="about-close-btn" onclick="openSysPref()">System Report…</button>
+          <button class="about-close-btn" onclick="closeAbout()" style="background:var(--accent);">OK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCK -->
+  <div id="dock">
+    <div class="dock-app" onclick="openFinder()" id="dock-finder">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe);">🗂️</div>
+      <div class="dock-dot" id="dot-finder"></div>
+      <div class="dock-label">Finder</div>
+    </div>
+    <div class="dock-app" onclick="openSafari()" id="dock-safari">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#007aff,#5856d6);">🌐</div>
+      <div class="dock-dot hidden" id="dot-safari"></div>
+      <div class="dock-label">Safari</div>
+    </div>
+    <div class="dock-app" onclick="openNotes()" id="dock-notes">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#ffcc00,#ff9500);">📝</div>
+      <div class="dock-dot hidden" id="dot-notes"></div>
+      <div class="dock-label">Notes</div>
+    </div>
+    <div class="dock-app" onclick="openMusic()" id="dock-music">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#fc3c44,#ff6b9d);">🎵</div>
+      <div class="dock-dot hidden" id="dot-music"></div>
+      <div class="dock-label">Music</div>
+    </div>
+    <div class="dock-app" onclick="openCalendar()" id="dock-calendar">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#ff3b30,#ff6b35);position:relative;">
+        <div style="display:flex;flex-direction:column;align-items:center;line-height:1;color:white;">
+          <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:1px;" id="dock-cal-month"></span>
+          <span style="font-size:22px;font-weight:300;line-height:1;" id="dock-cal-day"></span>
+        </div>
+      </div>
+      <div class="dock-dot hidden" id="dot-calendar"></div>
+      <div class="dock-label">Calendar</div>
+    </div>
+    <div class="dock-app" onclick="openCalc()" id="dock-calc">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#1c1c1e,#3a3a3c);">🖩</div>
+      <div class="dock-dot hidden" id="dot-calc"></div>
+      <div class="dock-label">Calculator</div>
+    </div>
+    <div class="dock-app" onclick="openTerminal()" id="dock-terminal">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#000,#333);">⬛</div>
+      <div class="dock-dot hidden" id="dot-terminal"></div>
+      <div class="dock-label">Terminal</div>
+    </div>
+    <div class="dock-app" onclick="openMail()" id="dock-mail">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#007aff,#5ac8fa);">✉️</div>
+      <div class="dock-dot hidden" id="dot-mail"></div>
+      <div class="dock-label">Mail</div>
+    </div>
+    <div class="dock-app" onclick="openPhotos()" id="dock-photos">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#ff9500,#ff3b30,#af52de,#5ac8fa);">🖼️</div>
+      <div class="dock-dot hidden" id="dot-photos"></div>
+      <div class="dock-label">Photos</div>
+    </div>
+    <div class="dock-app" onclick="openSysPref()" id="dock-syspref">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#636366,#8e8e93);">⚙️</div>
+      <div class="dock-dot hidden" id="dot-syspref"></div>
+      <div class="dock-label">System Settings</div>
+    </div>
+    <div class="dock-sep"></div>
+    <div class="dock-app" id="dock-trash" onclick="loadDir('trash');openFinder()">
+      <div class="dock-icon" style="background:linear-gradient(135deg,#636366,#48484a);">🗑️</div>
+      <div class="dock-dot hidden"></div>
+      <div class="dock-label">Trash</div>
+    </div>
+  </div>
+
+  <!-- MAIL WINDOW -->
+  <div class="window" id="mail-window">
+    <div class="window-titlebar" id="mail-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('mail-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('mail-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('mail-window')"></div>
+      </div>
+      <span class="window-title">Mail — Inbox</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;">
+        <div class="mail-sidebar">
+          <div class="mail-nav-section">Mailboxes</div>
+          <div class="mail-nav-item active" onclick="mailSelectBox(this,'inbox')">📥 Inbox <span class="mail-badge">4</span></div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'sent')">📤 Sent</div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'drafts')">📝 Drafts <span class="mail-badge">1</span></div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'junk')">🚫 Junk</div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'trash')">🗑️ Trash</div>
+          <div class="mail-nav-section">Smart Mailboxes</div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'unread')">🔵 Unread</div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'flagged')">🚩 Flagged</div>
+          <div class="mail-nav-section">iCloud</div>
+          <div class="mail-nav-item" onclick="mailSelectBox(this,'all')">📬 All Mail</div>
+        </div>
+        <div class="mail-inbox-pane">
+          <div class="mail-inbox-header">
+            <span class="mail-inbox-title" id="mail-box-title">Inbox</span>
+            <span class="mail-inbox-count" id="mail-box-count">4</span>
+          </div>
+          <input class="mail-search" type="text" placeholder="🔍 Filter Messages" />
+          <div style="flex:1;overflow-y:auto;" id="mail-msg-list"></div>
+          <div class="mail-compose-bar">
+            <button class="mail-compose-btn" onclick="openCompose()">✏️ Compose</button>
+            <button class="mail-compose-btn" style="background:rgba(255,255,255,0.1);">🗑️</button>
+            <button class="mail-compose-btn" style="background:rgba(255,255,255,0.1);">↩️ Reply</button>
+          </div>
+        </div>
+        <div class="mail-reader" id="mail-reader"><div style="margin:auto;text-align:center;color:rgba(255,255,255,0.2);font-size:14px;">Select a message to read</div></div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- PHOTOS WINDOW -->
+  <div class="window" id="photos-window">
+    <div class="window-titlebar" id="photos-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('photos-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('photos-window')"></div>
+        <div class="tl tl-max" onclick="maximizeWindow('photos-window')"></div>
+      </div>
+      <span class="window-title">Photos</span>
+    </div>
+    <div class="window-body">
+      <div class="window-glass" style="flex:1;display:flex;">
+        <div class="photos-sidebar">
+          <div class="photos-nav-section">Library</div>
+          <div class="photos-nav-item active" onclick="photosNav(this,'recents')">🕐 Recents</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'years')">📅 Years</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'months')">🗓️ Months</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'days')">📆 Days</div>
+          <div class="photos-nav-section">Media Types</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'videos')">🎬 Videos</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'selfies')">🤳 Selfies</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'portraits')">🖼️ Portraits</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'screenshots')">📸 Screenshots</div>
+          <div class="photos-nav-section">Albums</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'favorites')">❤️ Favorites</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'vacation')">✈️ Vacation 2024</div>
+          <div class="photos-nav-item" onclick="photosNav(this,'family')">👨‍👩‍👧 Family</div>
+        </div>
+        <div class="photos-main">
+          <div class="photos-toolbar">
+            <span class="photos-section-title" id="photos-title">Recents</span>
+            <button style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:5px 12px;color:white;font-size:12px;cursor:pointer;font-family:var(--font);">Import</button>
+          </div>
+          <div class="photos-grid" id="photos-grid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="resize-handle"></div>
+  </div>
+
+  <!-- WEATHER WINDOW -->
+  <div class="window" id="weather-window">
+    <div class="window-titlebar" id="weather-titlebar">
+      <div class="traffic-lights">
+        <div class="tl tl-close" onclick="closeWindow('weather-window')"></div>
+        <div class="tl tl-min" onclick="minimizeWindow('weather-window')"></div>
+        <div class="tl tl-max"></div>
+      </div>
+      <span class="window-title">Weather</span>
+    </div>
+    <div class="window-body">
+      <div style="flex:1;overflow-y:auto;background:linear-gradient(170deg,rgba(15,40,100,0.95),rgba(8,20,60,0.98));display:flex;flex-direction:column;">
+        <div class="weather-hero">
+          <div class="weather-city">Redmond, WA</div>
+          <div class="weather-cond" id="weather-cond">Partly Cloudy</div>
+          <div class="weather-temp" id="weather-temp">58°</div>
+          <div class="weather-hl">H:63° L:47°</div>
+        </div>
+        <div class="weather-hourly" id="weather-hourly"></div>
+        <div class="weather-daily" id="weather-daily"></div>
+        <div class="weather-stats">
+          <div class="weather-stat"><div class="weather-stat-label">💧 Humidity</div><div class="weather-stat-val">72%</div><div class="weather-stat-sub">Dew point 47°</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">💨 Wind</div><div class="weather-stat-val">8 mph</div><div class="weather-stat-sub">SW direction</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">👁️ Visibility</div><div class="weather-stat-val">10 mi</div><div class="weather-stat-sub">Clear</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">🌡️ Feels Like</div><div class="weather-stat-val">54°</div><div class="weather-stat-sub">Wind chill</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">🔆 UV Index</div><div class="weather-stat-val">2</div><div class="weather-stat-sub">Low</div></div>
+          <div class="weather-stat"><div class="weather-stat-label">🌅 Sunrise</div><div class="weather-stat-val">5:47 AM</div><div class="weather-stat-sub">Sunset 8:52 PM</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAUNCHPAD OVERLAY -->
+  <div id="launchpad-overlay" onclick="closeLaunchpad(event)">
+    <div id="launchpad-search-wrap">
+      <input id="launchpad-search" type="text" placeholder="Search" oninput="filterLaunchpad()" />
+    </div>
+    <div id="launchpad-grid"></div>
+    <div id="lp-page-dots">
+      <div class="lp-dot active"></div>
+      <div class="lp-dot"></div>
+    </div>
+  </div>
+
+  <!-- MISSION CONTROL OVERLAY -->
+  <div id="mission-overlay" onclick="closeMissionControl()">
+    <div id="mission-spaces">
+      <div class="mission-space-thumb active" style="background:linear-gradient(135deg,#0b0f2a,#1a1060);">
+        <div class="mission-space-label">Desktop 1</div>
+      </div>
+      <div class="mission-space-thumb" style="background:rgba(255,255,255,0.05);">
+        <div class="mission-space-label">Desktop 2</div>
+      </div>
+      <div class="mission-space-thumb" style="background:rgba(255,255,255,0.03);border-style:dashed;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:22px;">+</div>
+    </div>
+    <div id="mission-title">Mission Control</div>
+    <div id="mission-windows"></div>
+  </div>
+
+  <!-- SIRI OVERLAY -->
+  <div id="siri-overlay" onclick="closeSiri(event)">
+    <div id="siri-panel">
+      <div id="siri-orb"></div>
+      <div id="siri-text">How can I help?</div>
+      <div id="siri-sub">Powered by Apple Intelligence</div>
+      <div id="siri-input-row">
+        <input id="siri-input" type="text" placeholder="Ask Siri anything…" onkeydown="siriKeydown(event)" />
+        <button id="siri-send" onclick="siriSubmit()">↑</button>
+      </div>
+      <div id="siri-response"></div>
+    </div>
+  </div>
+
+  <!-- LOCK SCREEN -->
+  <div id="lock-screen">
+    <div class="lock-time" id="lock-time-display"></div>
+    <div class="lock-date" id="lock-date-display"></div>
+    <div class="lock-password-wrap">
+      <div class="lock-avatar">👤</div>
+      <div class="lock-user">Alex Johnson</div>
+      <input class="lock-pw-input" type="password" placeholder="Enter Password" id="lock-pw" onkeydown="unlockKeydown(event)" />
+      <button class="lock-unlock-btn" onclick="unlock()">Unlock</button>
+    </div>
+    <div class="lock-hint">Press any key or click to unlock</div>
+  </div>
+
+  <!-- QUICK LOOK OVERLAY -->
+  <div id="quicklook-overlay" onclick="closeQuickLook(event)">
+    <div id="quicklook-box">
+      <div class="ql-icon" id="ql-icon">📄</div>
+      <div class="ql-name" id="ql-name">File Name</div>
+      <div class="ql-meta" id="ql-meta">Metadata</div>
+      <div class="ql-close"><button class="ql-close-btn" onclick="closeQuickLook()">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Spotlight -->
+  <div id="spotlight-overlay" onclick="closeSpotlight(event)">
+    <div id="spotlight-box">
+      <div id="spotlight-input-wrap">
+        <span class="sp-icon">🔍</span>
+        <input id="spotlight-input" type="text" placeholder="Spotlight Search" oninput="updateSpotlight()" onkeydown="spotlightKey(event)" />
+      </div>
+      <div id="spotlight-results"></div>
+    </div>
+  </div>
+
+  <!-- Notification Panel -->
+  <div id="notif-panel">
+    <div class="notif-date" id="notif-date-str"></div>
+    <div class="notif-subdate" id="notif-subdate-str"></div>
+    <div class="notif-card">
+      <div class="nc-app">📅 Calendar</div>
+      <div class="nc-title">Team Standup</div>
+      <div class="nc-body">Daily standup meeting in 10 minutes — Conference Room B</div>
+      <div class="nc-time">In 10 minutes</div>
+    </div>
+    <div class="notif-card">
+      <div class="nc-app">✉️ Mail</div>
+      <div class="nc-title">Re: Project Update</div>
+      <div class="nc-body">Hey! Looks great, I'll review the final draft tonight and get back to you.</div>
+      <div class="nc-time">2 minutes ago</div>
+    </div>
+    <div class="notif-card">
+      <div class="nc-app">💬 Messages</div>
+      <div class="nc-title">Alex Chen</div>
+      <div class="nc-body">Are you coming to the event this weekend? 🎉</div>
+      <div class="nc-time">8 minutes ago</div>
+    </div>
+    <div class="notif-card">
+      <div class="nc-app">🔔 Reminders</div>
+      <div class="nc-title">Pick up groceries</div>
+      <div class="nc-body">Milk, eggs, bread, coffee beans, avocado</div>
+      <div class="nc-time">1 hour ago</div>
+    </div>
+    <div style="height:1px;background:rgba(255,255,255,0.08);margin:4px 0;"></div>
+    <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.4);text-align:center;padding:8px;">Earlier Today</div>
+    <div class="notif-card">
+      <div class="nc-app">📱 App Store</div>
+      <div class="nc-title">3 Updates Available</div>
+      <div class="nc-body">Xcode, Logic Pro, and Final Cut Pro have updates ready to install.</div>
+      <div class="nc-time">3 hours ago</div>
+    </div>
+  </div>
+
+  <!-- Control Center -->
+  <div id="cc-panel">
+    <div class="cc-row">
+      <div class="cc-tile on" id="cc-wifi" onclick="toggleTile('cc-wifi')">
+        <div class="cc-tile-icon">📶</div>
+        <div class="cc-tile-title">Wi-Fi</div>
+        <div class="cc-tile-label">Home Network</div>
+      </div>
+      <div class="cc-tile on" id="cc-bt" onclick="toggleTile('cc-bt')">
+        <div class="cc-tile-icon">🔵</div>
+        <div class="cc-tile-title">Bluetooth</div>
+        <div class="cc-tile-label">On</div>
+      </div>
+      <div class="cc-tile" id="cc-airdrop" onclick="toggleTile('cc-airdrop')">
+        <div class="cc-tile-icon">📡</div>
+        <div class="cc-tile-title">AirDrop</div>
+        <div class="cc-tile-label">Off</div>
+      </div>
+      <div class="cc-tile" id="cc-hotspot" onclick="toggleTile('cc-hotspot')">
+        <div class="cc-tile-icon">📲</div>
+        <div class="cc-tile-title">Hotspot</div>
+        <div class="cc-tile-label">Off</div>
+      </div>
+    </div>
+    <div class="cc-row">
+      <div class="cc-tile on cc-full-tile" id="cc-focusmode">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="cc-tile-icon">🌙</div>
+          <div><div class="cc-tile-title">Focus</div><div class="cc-tile-label">Do Not Disturb · Until 9:00 AM</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;">
+      <div class="cc-slider-row">
+        <span class="cc-slider-icon">☀️</span>
+        <input type="range" class="cc-slider" min="0" max="100" value="75" />
+      </div>
+      <div class="cc-slider-row">
+        <span class="cc-slider-icon">🔊</span>
+        <input type="range" class="cc-slider" min="0" max="100" value="50" />
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.08);border-radius:12px;padding:12px;">
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:6px;">NOW PLAYING</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:38px;height:38px;border-radius:8px;background:linear-gradient(135deg,#fc3c44,#ff6b9d);display:flex;align-items:center;justify-content:center;font-size:18px;">🎵</div>
+        <div style="flex:1;overflow:hidden;">
+          <div style="font-size:13px;font-weight:600;color:white;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Blinding Lights</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);">The Weeknd</div>
+        </div>
+        <div style="display:flex;gap:8px;color:white;font-size:16px;">
+          <span style="cursor:pointer">⏮</span>
+          <span style="cursor:pointer" id="cc-play-btn" onclick="togglePlay()">⏸</span>
+          <span style="cursor:pointer">⏭</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toasts"></div>
+
+  <!-- Context Menu -->
+  <div id="ctx-menu">
+    <div class="ctx-item" onclick="openFinder()">📂 Open in Finder</div>
+    <div class="ctx-item">📋 Paste</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="openSysPref('wallpaper')">🖼️ Change Wallpaper…</div>
+    <div class="ctx-item" onclick="openSysPref('displays')">🖥️ Display Settings…</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="openSpotlight()">🔍 Spotlight Search…</div>
+    <div class="ctx-item" onclick="openMissionControl()">🗔 Mission Control</div>
+    <div class="ctx-item" onclick="openLaunchpad()">🚀 Launchpad</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="openSiri()">🎙️ Siri…</div>
+  </div>
+
+  <!-- Selection box -->
+  <div id="selection-box"></div>
+</div>
+
+<script>
+// ─────────────── INIT ───────────────
+const now = new Date();
+document.getElementById('term-login-time').textContent =
+  now.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) + ' ' +
+  now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+// Clock
+function updateClock() {
+  const n = new Date();
+  const t = n.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+  document.getElementById('menu-time').textContent = t;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('notif-date-str').textContent = days[n.getDay()] + ', ' + months[n.getMonth()] + ' ' + n.getDate();
+  document.getElementById('notif-subdate-str').textContent = t;
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// Stars
+function createStars() {
+  const c = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.2 + 0.4;
+    const dur = (Math.random() * 4 + 2).toFixed(1) + 's';
+    const minO = (Math.random() * 0.1).toFixed(2);
+    const maxO = (Math.random() * 0.6 + 0.3).toFixed(2);
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*65}%;width:${size}px;height:${size}px;--d:${dur};--min:${minO};--max:${maxO};animation-delay:${(Math.random()*6).toFixed(1)}s`;
+    c.appendChild(s);
+  }
+}
+createStars();
+
+// ─────────────── WINDOW MANAGEMENT ───────────────
+let zCounter = 50;
+let activeWin = null;
+
+function bringToFront(id) {
+  const w = document.getElementById(id);
+  zCounter++;
+  w.style.zIndex = zCounter;
+  if (activeWin) activeWin.classList.remove('active-window');
+  w.classList.add('active-window');
+  activeWin = w;
+}
+
+function closeWindow(id) {
+  const w = document.getElementById(id);
+  w.classList.add('minimizing');
+  setTimeout(() => { w.style.display = 'none'; w.classList.remove('minimizing'); }, 350);
+  updateDots(id, false);
+}
+
+function minimizeWindow(id) { closeWindow(id); }
+
+function maximizeWindow(id) {
+  const w = document.getElementById(id);
+  if (w.dataset.maximized === '1') {
+    w.style.top = w.dataset.origTop; w.style.left = w.dataset.origLeft;
+    w.style.width = w.dataset.origW; w.style.height = w.dataset.origH;
+    w.dataset.maximized = '0';
+  } else {
+    w.dataset.origTop = w.style.top; w.dataset.origLeft = w.style.left;
+    w.dataset.origW = w.style.width; w.dataset.origH = w.style.height;
+    w.style.top = '28px'; w.style.left = '0';
+    w.style.width = '100%'; w.style.height = 'calc(100% - 28px - 80px)';
+    w.dataset.maximized = '1';
+  }
+}
+
+function updateDots(winId, visible) {
+  const map = {'finder-window':'dot-finder','safari-window':'dot-safari','notes-window':'dot-notes','terminal-window':'dot-terminal'};
+  const dot = document.getElementById(map[winId]);
+  if (dot) dot.classList.toggle('hidden', !visible);
+}
+
+function showWindow(id) {
+  const w = document.getElementById(id);
+  w.style.display = 'flex';
+  bringToFront(id);
+  updateDots(id, true);
+}
+
+// Dragging
+(function() {
+  let dragging = null, ox = 0, oy = 0;
+  document.querySelectorAll('[id$="-titlebar"]').forEach(tb => {
+    tb.addEventListener('mousedown', e => {
+      if (e.target.classList.contains('tl')) return;
+      dragging = tb.closest('.window');
+      bringToFront(dragging.id);
+      const r = dragging.getBoundingClientRect();
+      ox = e.clientX - r.left; oy = e.clientY - r.top;
+      e.preventDefault();
+    });
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const l = e.clientX - ox, t = e.clientY - oy;
+    dragging.style.left = Math.max(0, l) + 'px';
+    dragging.style.top = Math.max(28, t) + 'px';
+  });
+  document.addEventListener('mouseup', () => { dragging = null; });
+})();
+
+// Resizing
+(function() {
+  document.querySelectorAll('.resize-handle').forEach(handle => {
+    let resizing = null, sx, sy, sw, sh;
+    handle.addEventListener('mousedown', e => {
+      resizing = handle.closest('.window');
+      sx = e.clientX; sy = e.clientY;
+      const r = resizing.getBoundingClientRect();
+      sw = r.width; sh = r.height;
+      e.preventDefault(); e.stopPropagation();
+    });
+    document.addEventListener('mousemove', e => {
+      if (!resizing) return;
+      const nw = Math.max(300, sw + e.clientX - sx);
+      const nh = Math.max(200, sh + e.clientY - sy);
+      resizing.style.width = nw + 'px';
+      resizing.style.height = nh + 'px';
+    });
+    document.addEventListener('mouseup', () => { resizing = null; });
+  });
+})();
+
+// Click on window to focus
+document.querySelectorAll('.window').forEach(w => {
+  w.addEventListener('mousedown', () => bringToFront(w.id));
+});
+
+// ─────────────── APPS ───────────────
+function openFinder() {
+  const w = document.getElementById('finder-window');
+  w.style.display = 'flex';
+  loadDir('home');
+  showWindow('finder-window');
+  bounceDock('dock-finder');
+}
+
+function openSafari() {
+  showWindow('safari-window');
+  loadSafariPage('apple.com');
+  bounceDock('dock-safari');
+}
+
+function openNotes() {
+  showWindow('notes-window');
+  loadNotes();
+  bounceDock('dock-notes');
+}
+
+function openTerminal() {
+  showWindow('terminal-window');
+  document.getElementById('term-input').focus();
+  bounceDock('dock-terminal');
+}
+
+function bounceDock(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('bouncing');
+  void el.offsetWidth;
+  el.classList.add('bouncing');
+  setTimeout(() => el.classList.remove('bouncing'), 2200);
+}
+
+// ─────────────── FINDER ───────────────
+const DIRS = {
+  home: {label:'Home',files:[
+    {n:'Desktop',e:'🗂️'},{n:'Documents',e:'📁'},{n:'Downloads',e:'⬇️'},
+    {n:'Movies',e:'🎬'},{n:'Music',e:'🎵'},{n:'Pictures',e:'🖼️'},
+    {n:'Applications',e:'📦'},{n:'Library',e:'📚'},{n:'Public',e:'📂'},
+    {n:'Sites',e:'🌐'},{n:'.zshrc',e:'⚙️'},{n:'.ssh',e:'🔒'}
+  ]},
+  documents: {label:'Documents',files:[
+    {n:'Resume_2025.pdf',e:'📄'},{n:'Budget.xlsx',e:'📊'},{n:'Project Plan.docx',e:'📝'},
+    {n:'Notes',e:'📁'},{n:'Archive',e:'🗂️'},{n:'Contracts',e:'📁'},
+    {n:'Tax_2024.pdf',e:'📄'},{n:'Ideas.md',e:'📋'}
+  ]},
+  downloads: {label:'Downloads',files:[
+    {n:'Xcode_16.dmg',e:'💿'},{n:'CleanMyMac.zip',e:'🗜️'},{n:'Screenshot.png',e:'🖼️'},
+    {n:'report.pdf',e:'📄'},{n:'node-v22.pkg',e:'📦'},{n:'WWDC25.mp4',e:'🎬'},
+    {n:'invoice_123.pdf',e:'📄'}
+  ]},
+  pictures: {label:'Pictures',files:[
+    {n:'Vacation 2024',e:'📁'},{n:'IMG_0001.jpg',e:'🖼️'},{n:'IMG_0002.jpg',e:'🖼️'},
+    {n:'Wallpapers',e:'📁'},{n:'Screenshots',e:'📁'},{n:'Profile.png',e:'🖼️'}
+  ]},
+  music: {label:'Music',files:[
+    {n:'My Music',e:'🎵'},{n:'Playlists',e:'🎶'},{n:'GarageBand',e:'🎸'},
+    {n:'podcast_ep1.mp3',e:'🎙️'}
+  ]},
+  movies: {label:'Movies',files:[
+    {n:'WWDC 2025',e:'📁'},{n:'Tutorials',e:'📁'},{n:'travel_vlog.mov',e:'🎬'}
+  ]},
+  desktop: {label:'Desktop',files:[
+    {n:'Macintosh HD',e:'🖥️'},{n:'Screenshot.png',e:'📸'},{n:'Projects',e:'🗂️'}
+  ]},
+  mac: {label:'Macintosh HD',files:[
+    {n:'Applications',e:'📦'},{n:'Library',e:'📚'},{n:'System',e:'⚙️'},
+    {n:'Users',e:'👥'},{n:'Volumes',e:'💾'},{n:'private',e:'🔒'}
+  ]},
+  icloud: {label:'iCloud Drive',files:[
+    {n:'Desktop & Documents',e:'📁'},{n:'Shared',e:'🤝'},{n:'CloudKit',e:'☁️'}
+  ]},
+  trash: {label:'Trash',files:[
+    {n:'old_backup.dmg',e:'💿'},{n:'temp_notes.txt',e:'📄'},{n:'Screenshot_old.png',e:'🖼️'}
+  ]}
+};
+
+let currentDir = 'home';
+
+function loadDir(dir) {
+  currentDir = dir;
+  const data = DIRS[dir] || DIRS.home;
+  document.getElementById('finder-path-display').textContent = data.label;
+  const fc = document.getElementById('finder-files');
+  fc.innerHTML = '';
+  data.files.forEach(f => {
+    const el = document.createElement('div');
+    el.className = 'finder-file';
+    el.innerHTML = `<div class="ff-icon">${f.e}</div><div class="ff-name">${f.n}</div>`;
+    el.onclick = () => document.querySelectorAll('.finder-file').forEach(x => x.classList.remove('selected')) || el.classList.add('selected');
+    el.ondblclick = () => { if (!f.n.includes('.')) { const subdir = f.n.toLowerCase().replace(/ .*/,''); if (DIRS[subdir]) loadDir(subdir); }};
+    fc.appendChild(el);
+  });
+  document.getElementById('finder-status').textContent = `${data.files.length} items`;
+  // Update sidebar active
+  document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+  const sidebarItems = document.querySelectorAll('.sidebar-item');
+  sidebarItems.forEach(s => { if (s.onclick && s.onclick.toString().includes(`'${dir}'`)) s.classList.add('active'); });
+}
+
+function filterFiles() {
+  const q = document.getElementById('finder-search-input').value.toLowerCase();
+  document.querySelectorAll('.finder-file').forEach(f => {
+    f.style.display = f.querySelector('.ff-name').textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function finderNav(d) {
+  const dirs = Object.keys(DIRS);
+  const idx = dirs.indexOf(currentDir);
+  const next = dirs[(idx + d + dirs.length) % dirs.length];
+  loadDir(next);
+}
+
+// ─────────────── SAFARI ───────────────
+const PAGES = {
+  'apple.com': () => `
+    <div style="max-width:700px;margin:0 auto;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #ddd;margin-bottom:24px;">
+        <span style="font-size:28px;">🍎</span>
+        <div style="display:flex;gap:24px;font-size:14px;color:#555;">
+          <span style="cursor:pointer">Store</span><span style="cursor:pointer">Mac</span><span style="cursor:pointer">iPad</span><span style="cursor:pointer">iPhone</span><span style="cursor:pointer">Watch</span><span style="cursor:pointer">Vision</span>
+        </div>
+        <div style="font-size:14px;color:#0066CC;cursor:pointer">🔍</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#1c1c1e,#2c2c2e);border-radius:18px;padding:48px 32px;color:white;text-align:center;margin-bottom:20px;">
+        <div style="font-size:13px;color:#06c;font-weight:600;margin-bottom:8px;">macOS Tahoe</div>
+        <div style="font-size:42px;font-weight:700;margin-bottom:12px;">Built for intelligence.</div>
+        <div style="font-size:17px;color:rgba(255,255,255,0.7);">A beautiful, personal, and powerful experience.</div>
+        <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;">
+          <button style="background:#06c;color:white;border:none;border-radius:20px;padding:10px 20px;font-size:14px;cursor:pointer;">Learn more</button>
+          <button style="background:rgba(255,255,255,0.15);color:white;border:none;border-radius:20px;padding:10px 20px;font-size:14px;cursor:pointer;">Update now</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        ${[['📱','iPhone 16 Pro','From $999'],['💻','MacBook Pro','From $1,999'],['⌚','Apple Watch S10','From $399'],['🎵','AirPods Pro 3','From $249'],['🥽','Apple Vision Pro','From $3,499'],['📺','Apple TV 4K','From $129']].map(([i,n,p])=>`<div style="border:1px solid #ddd;border-radius:14px;padding:16px;text-align:center;cursor:pointer;"><div style="font-size:32px;margin-bottom:8px;">${i}</div><div style="font-size:14px;font-weight:600;">${n}</div><div style="font-size:12px;color:#888;margin-top:4px;">${p}</div></div>`).join('')}
+      </div>
+    </div>
+  `,
+  'news.ycombinator.com': () => `
+    <div style="max-width:700px;margin:0 auto;font-family:monospace;">
+      <div style="background:#ff6600;padding:8px 12px;border-radius:6px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+        <span style="font-weight:700;color:white;font-size:16px;">Y</span>
+        <span style="color:white;font-weight:600;">Hacker News</span>
+      </div>
+      ${[['macOS Tahoe Liquid Glass API released to developers','762 points \u2022 3 hours ago \u2022 412 comments'],['Show HN: I built a macOS emulator in HTML/CSS/JS','441 points \u2022 2 hours ago \u2022 198 comments'],['Apple Intelligence reaches 500M users','387 points \u2022 4 hours ago \u2022 312 comments'],['Ask HN: What is your favorite macOS feature?','298 points \u2022 1 hour ago \u2022 176 comments'],['The future of desktop computing (2025)','256 points \u2022 5 hours ago \u2022 89 comments'],['Tailwind CSS v5 released','214 points \u2022 6 hours ago \u2022 143 comments'],['Claude 4.5 beats human performance on SWE-bench','511 points \u2022 7 hours ago \u2022 289 comments']].map((x,i)=>`<div style="padding:8px 0;border-bottom:1px solid #eee;display:flex;gap:8px;"><span style="color:#888;width:20px;text-align:right;flex-shrink:0;">${i+1}.</span><div><div style="font-size:14px;cursor:pointer;color:#111">${x[0]}</div><div style="font-size:11px;color:#888;margin-top:2px;">${x[1]}</div></div></div>`).join('')}
+    </div>
+  `,
+  'github.com': () => `
+    <div style="max-width:700px;margin:0 auto;">
+      <div style="display:flex;align-items:center;gap:16px;padding:12px;background:#24292f;border-radius:8px;margin-bottom:20px;">
+        <span style="font-size:24px;color:white;">🐙</span>
+        <span style="color:white;font-weight:600;font-size:16px;">GitHub</span>
+        <input style="flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:5px 10px;color:white;font-size:13px;" placeholder="Search or jump to…" />
+        <span style="color:white;font-size:13px;cursor:pointer">Pull requests</span>
+        <span style="color:white;font-size:13px;cursor:pointer">Issues</span>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+        <div>
+          ${[['anthropics/claude','Python • ★ 48.2k • Updated 2h ago'],['openai/gpt-5','Python • ★ 82.1k • Updated 5h ago'],['vercel/next.js','TypeScript • ★ 123k • Updated 1h ago'],['tailwindlabs/tailwindcss','JavaScript • ★ 86k • Updated 3h ago']].map(([r,d])=>`<div style="border:1px solid #ddd;border-radius:8px;padding:14px;margin-bottom:10px;cursor:pointer;"><div style="font-size:14px;font-weight:600;color:#0066CC;">${r}</div><div style="font-size:12px;color:#666;margin-top:4px;">${d}</div></div>`).join('')}
+        </div>
+        <div>
+          <div style="background:#f6f8fa;border-radius:8px;padding:14px;font-size:13px;">
+            <div style="font-weight:600;margin-bottom:8px;">Trending Repositories</div>
+            ${['claude-code','gpt-5-preview','llama-4','devin-v2','gemini-ultra'].map(r=>`<div style="padding:5px 0;border-bottom:1px solid #e0e0e0;cursor:pointer;color:#0066CC;">${r}</div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+};
+
+function loadSafariPage(url) {
+  const loader = document.getElementById('safari-loader');
+  loader.style.display = 'block'; loader.style.width = '0';
+  void loader.offsetWidth;
+  loader.style.animation = 'none';
+  void loader.offsetWidth;
+  loader.style.animation = 'pageLoad 1.2s ease-out forwards';
+  const content = document.getElementById('safari-page-content');
+  const domain = url.replace(/^https?:\/\//,'').replace(/\/.*/,'');
+  setTimeout(() => {
+    loader.style.display = 'none';
+    const pageFn = PAGES[domain] || PAGES['apple.com'];
+    content.innerHTML = `<div style="padding:20px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.6;">${pageFn()}</div>`;
+  }, 900);
+}
+
+function navigateSafari(e) {
+  if (e.key === 'Enter') {
+    const url = e.target.value;
+    loadSafariPage(url);
+  }
+}
+
+// ─────────────── NOTES ───────────────
+const notesData = [
+  {title:'Meeting Notes',date:'Today',body:'- Discuss Q4 roadmap\n- Review design proposals\n- Team retrospective\n- Launch planning'},
+  {title:'Shopping List',date:'Yesterday',body:'Milk\nEggs\nBread\nCoffee\nAvocados\nOlive oil\nParmesan'},
+  {title:'Ideas & Projects',date:'Mon, Nov 18',body:'1. Build a macOS Tahoe clone in HTML\n2. Learn SwiftUI animations\n3. Write blog post on Liquid Glass\n4. Side project: minimal RSS reader'},
+  {title:'Books to Read',date:'Nov 14',body:'• The Pragmatic Programmer\n• A Pattern Language\n• Designing with Data\n• Thinking in Systems\n• The Elements of Style'},
+];
+
+function loadNotes() {
+  const sb = document.getElementById('notes-sidebar');
+  sb.innerHTML = '';
+  notesData.forEach((n, i) => {
+    const el = document.createElement('div');
+    el.className = 'notes-list-item' + (i===0?' active':'');
+    el.innerHTML = `<div class="nli-title">${n.title}</div><div class="nli-preview">${n.body.replace(/\n/g,' ')}</div><div class="nli-date">${n.date}</div>`;
+    el.onclick = () => {
+      document.querySelectorAll('.notes-list-item').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('notes-body').value = n.body;
+      document.getElementById('notes-meta').textContent = n.date + ' at 12:00 PM';
+    };
+    sb.appendChild(el);
+  });
+  document.getElementById('notes-body').value = notesData[0].body;
+}
+
+// ─────────────── TERMINAL ───────────────
+const termHistory = [];
+let histIdx = 0;
+let termCwd = '~';
+
+function termKeydown(e) {
+  const input = document.getElementById('term-input');
+  if (e.key === 'Enter') {
+    const cmd = input.value.trim();
+    if (cmd) { termHistory.push(cmd); histIdx = termHistory.length; }
+    execTerm(cmd);
+    input.value = '';
+  } else if (e.key === 'ArrowUp') {
+    histIdx = Math.max(0, histIdx - 1);
+    input.value = termHistory[histIdx] || '';
+    e.preventDefault();
+  } else if (e.key === 'ArrowDown') {
+    histIdx = Math.min(termHistory.length, histIdx + 1);
+    input.value = termHistory[histIdx] || '';
+    e.preventDefault();
+  }
+}
+
+function appendTerm(html) {
+  const body = document.getElementById('terminal-body');
+  const inputLine = body.querySelector('.term-input-line');
+  const line = document.createElement('div');
+  line.innerHTML = html;
+  body.insertBefore(line, inputLine);
+  body.scrollTop = body.scrollHeight;
+}
+
+function execTerm(cmd) {
+  appendTerm(`<div class="term-line"><span class="term-prompt">user@MacBook-Pro ${termCwd} % </span><span class="term-cmd">${escH(cmd)}</span></div>`);
+  if (!cmd) return;
+  const parts = cmd.split(' ');
+  const base = parts[0];
+  const args = parts.slice(1);
+  const responses = {
+    'ls': () => {
+      const dir = DIRS[termCwd==='~'?'home':termCwd] || DIRS.home;
+      return '<span class="term-output">' + dir.files.map(f=>f.n).join('    ') + '</span>';
+    },
+    'pwd': () => `<span class="term-output">/Users/user${termCwd==='~'?'':'/'+termCwd}</span>`,
+    'whoami': () => '<span class="term-output">user</span>',
+    'date': () => `<span class="term-output">${new Date().toString()}</span>`,
+    'uname': () => args.includes('-a') ? '<span class="term-output">Darwin MacBook-Pro.local 25.0.0 Darwin Kernel Version 25.0.0 arm64</span>' : '<span class="term-output">Darwin</span>',
+    'echo': () => `<span class="term-output">${escH(args.join(' ').replace(/^["']|["']$/g,''))}</span>`,
+    'cd': () => { const d = args[0]||'~'; if(d==='..') termCwd='~'; else if(d==='~') termCwd='~'; else termCwd=d; updatePrompt(); return ''; },
+    'clear': () => { document.querySelectorAll('.term-line').forEach(l=>l.remove()); return null; },
+    'cat': () => `<span class="term-output">${args[0]||'No file specified'}</span>`,
+    'sw_vers': () => '<span class="term-output">ProductName:	macOS\nProductVersion:	26.0\nBuildVersion:	25A123</span>',
+    'brew': () => args[0]==='list'?'<span class="term-output">git    node    python    ffmpeg    wget    curl    zsh</span>':'<span class="term-output">Homebrew 4.5.0</span>',
+    'node': () => args[0]==='--version'?'<span class="term-output">v22.4.0</span>':'<span class="term-output">Welcome to Node.js v22.4.0. Type .exit to exit.</span>',
+    'python3': () => args[0]==='--version'?'<span class="term-output">Python 3.13.1</span>':'<span class="term-output">Python 3.13.1 (main)</span>',
+    'git': () => {
+      if (args[0]==='status') return '<span class="term-output">On branch main\nYour branch is up to date with origin/main.\nnothing to commit, working tree clean</span>';
+      if (args[0]==='log') return '<span class="term-output">commit a3f1b2c (HEAD -> main)\nAuthor: user &lt;user@example.com&gt;\nDate:   Sat May 2 12:00:00 2026\n\n    Initial commit</span>';
+      return '<span class="term-output">usage: git [--version] [--help] &lt;command&gt;</span>';
+    },
+    'help': () => '<span class="term-output">Available: ls, pwd, cd, cat, echo, date, uname, whoami, clear, sw_vers, brew, node, python3, git, help</span>',
+  };
+  if (responses[base]) {
+    const out = responses[base]();
+    if (out !== null && out !== '') appendTerm(`<div class="term-line">${out}</div>`);
+  } else {
+    appendTerm(`<div class="term-line term-error">zsh: command not found: ${escH(base)}</div>`);
+  }
+}
+
+function updatePrompt() {
+  const inp = document.querySelector('.term-input-line');
+  if (inp) inp.querySelector('.term-prompt').textContent = `user@MacBook-Pro ${termCwd} % `;
+}
+
+function escH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─────────────── SPOTLIGHT ───────────────
+const spotlightItems = [
+  {icon:'🗂️',name:'Finder',type:'Application',action:openFinder},
+  {icon:'🌐',name:'Safari',type:'Application',action:openSafari},
+  {icon:'📝',name:'Notes',type:'Application',action:openNotes},
+  {icon:'⬛',name:'Terminal',type:'Application',action:openTerminal},
+  {icon:'🎵',name:'Music',type:'Application',action:null},
+  {icon:'✉️',name:'Mail',type:'Application',action:null},
+  {icon:'📅',name:'Calendar',type:'Application',action:null},
+  {icon:'⚙️',name:'System Settings',type:'Application',action:null},
+  {icon:'🖼️',name:'Photos',type:'Application',action:null},
+  {icon:'🗺️',name:'Maps',type:'Application',action:null},
+  {icon:'📊',name:'Numbers',type:'Application',action:null},
+  {icon:'🎙️',name:'Podcasts',type:'Application',action:null},
+  {icon:'📖',name:'Books',type:'Application',action:null},
+  {icon:'🔒',name:'Keychain Access',type:'Application',action:null},
+  {icon:'💡',name:'Spotlight Search',type:'Feature',action:null},
+  {icon:'🌤️',name:'Weather in Seattle',type:'Weather',action:null},
+  {icon:'📄',name:'Resume_2025.pdf',type:'Document',action:null},
+  {icon:'📋',name:'Ideas.md',type:'Document',action:null},
+  {icon:'📊',name:'Budget.xlsx',type:'Spreadsheet',action:null},
+];
+
+let spSelected = 0;
+
+function openSpotlight() {
+  document.getElementById('spotlight-overlay').classList.add('show');
+  setTimeout(() => document.getElementById('spotlight-input').focus(), 50);
+  document.getElementById('spotlight-input').value = '';
+  updateSpotlight();
+}
+
+function closeSpotlight(e) {
+  if (e && e.target && e.target !== document.getElementById('spotlight-overlay')) return;
+  document.getElementById('spotlight-overlay').classList.remove('show');
+}
+
+function updateSpotlight() {
+  const q = document.getElementById('spotlight-input').value.toLowerCase();
+  const results = q ? spotlightItems.filter(i => i.name.toLowerCase().includes(q)) : spotlightItems.slice(0,8);
+  const container = document.getElementById('spotlight-results');
+  if (results.length === 0) {
+    container.innerHTML = `<div style="padding:16px;text-align:center;color:rgba(255,255,255,0.4);font-size:13px;">No results for "${q}"</div>`;
+    return;
+  }
+  // Group
+  const apps = results.filter(r=>r.type==='Application');
+  const docs = results.filter(r=>r.type==='Document'||r.type==='Spreadsheet');
+  const other = results.filter(r=>!['Application','Document','Spreadsheet'].includes(r.type));
+  let html = '';
+  if (apps.length) { html += `<div class="sp-category">Applications</div>`; apps.forEach((r,i) => { html += spItem(r, i===0 && !q); }); }
+  if (docs.length) { html += `<div class="sp-category">Documents</div>`; docs.forEach(r => { html += spItem(r, false); }); }
+  if (other.length) { html += `<div class="sp-category">Other</div>`; other.forEach(r => { html += spItem(r, false); }); }
+  container.innerHTML = html;
+}
+
+function spItem(r, selected) {
+  const key = r.name.replace(/[^a-zA-Z0-9]/g,'_');
+  return `<div class="sp-result${selected?' sp-selected':''}" data-sp-key="${key}" onclick="spLaunch(this)">
+    <span class="sp-r-icon">${r.icon}</span>
+    <div><div class="sp-r-name">${r.name}</div><div class="sp-r-type">${r.type}</div></div>
+  </div>`;
+}
+
+function spLaunch(el) {
+  document.getElementById('spotlight-overlay').classList.remove('show');
+  const key = el.dataset.spKey;
+  const item = spotlightItems.find(i => i.name.replace(/[^a-zA-Z0-9]/g,'_') === key);
+  if (item && item.action) setTimeout(() => item.action(), 80);
+}
+
+function spotlightKey(e) {
+  if (e.key === 'Escape') document.getElementById('spotlight-overlay').classList.remove('show');
+  if (e.key === 'Enter') {
+    const sel = document.querySelector('.sp-selected');
+    if (sel) sel.click();
+  }
+}
+
+// ─────────────── DROPDOWNS ───────────────
+let activeDropdown = null;
+
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  if (activeDropdown && activeDropdown !== el) {
+    activeDropdown.classList.remove('show');
+    activeDropdown.closest('.menu-item, .menu-apple')?.classList.remove('active');
+  }
+  el.classList.toggle('show');
+  el.parentElement.classList.toggle('active', el.classList.contains('show'));
+  activeDropdown = el.classList.contains('show') ? el : null;
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#menubar')) {
+    document.querySelectorAll('.dropdown.show').forEach(d => {
+      d.classList.remove('show');
+      d.parentElement.classList?.remove('active');
+    });
+    activeDropdown = null;
+  }
+  if (!e.target.closest('#cc-panel') && !e.target.closest('#cc-btn')) document.getElementById('cc-panel').classList.remove('show');
+  if (!e.target.closest('#notif-panel') && !e.target.closest('#notif-btn')) document.getElementById('notif-panel').classList.remove('show');
+  if (!e.target.closest('#ctx-menu')) document.getElementById('ctx-menu').classList.remove('show');
+});
+
+// ─────────────── NOTIFICATIONS ───────────────
+function toggleNotif() {
+  document.getElementById('notif-panel').classList.toggle('show');
+  document.getElementById('cc-panel').classList.remove('show');
+}
+
+function toggleCC() {
+  document.getElementById('cc-panel').classList.toggle('show');
+  document.getElementById('notif-panel').classList.remove('show');
+}
+
+function toggleTile(id) {
+  const t = document.getElementById(id);
+  t.classList.toggle('on');
+  const label = t.querySelector('.cc-tile-label');
+  if (label) label.textContent = t.classList.contains('on') ? (id==='cc-wifi'?'Home Network':'On') : 'Off';
+}
+
+let isPlaying = true;
+function togglePlay() {
+  isPlaying = !isPlaying;
+  document.getElementById('cc-play-btn').textContent = isPlaying ? '⏸' : '▶️';
+}
+
+// Toast notifications
+function showToast(icon, app, title, body) {
+  const tc = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<div class="toast-icon">${icon}</div><div><div class="toast-app">${app}</div><div class="toast-title">${title}</div><div class="toast-body">${body}</div></div>`;
+  tc.appendChild(t);
+  setTimeout(() => { t.classList.add('hiding'); setTimeout(() => t.remove(), 350); }, 5000);
+}
+
+// Staggered toasts on load
+setTimeout(() => showToast('✉️','Mail','New message from Sarah K.','Can you review the mockups when you get a chance?'), 3500);
+setTimeout(() => showToast('📅','Calendar','Team Standup in 10 min','Conference Room B • 9 people invited'), 6000);
+setTimeout(() => showToast('💬','Messages','Alex Chen','Are you coming to the event this weekend? 🎉'), 10000);
+setTimeout(() => showToast('🔋','Battery','Power Adapter Connected','MacBook Pro is charging'), 15000);
+
+// ─────────────── CONTEXT MENU ───────────────
+document.getElementById('desktop').addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const m = document.getElementById('ctx-menu');
+  m.style.left = Math.min(e.clientX, window.innerWidth - 220) + 'px';
+  m.style.top = Math.min(e.clientY, window.innerHeight - 250) + 'px';
+  m.classList.add('show');
+});
+
+// ─────────────── DESKTOP SELECTION ───────────────
+function selectIcon(el) {
+  document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+// Click desktop to deselect
+document.getElementById('desktop').addEventListener('click', e => {
+  if (!e.target.closest('.desktop-icon') && !e.target.closest('.window') && !e.target.closest('#dock') && !e.target.closest('#menubar')) {
+    document.querySelectorAll('.desktop-icon').forEach(i => i.classList.remove('selected'));
+  }
+});
+
+// ─────────────── KEYBOARD SHORTCUTS ───────────────
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === ' ') { e.preventDefault(); openSpotlight(); }
+  if (e.key === 'Escape') {
+    document.getElementById('spotlight-overlay').classList.remove('show');
+    document.getElementById('cc-panel').classList.remove('show');
+    document.getElementById('notif-panel').classList.remove('show');
+  }
+});
+
+// ─────────────── DOCK MAGNIFICATION ───────────────
+(function() {
+  const dock = document.getElementById('dock');
+  const apps = dock.querySelectorAll('.dock-app');
+  dock.addEventListener('mousemove', e => {
+    const dockRect = dock.getBoundingClientRect();
+    const mx = e.clientX;
+    apps.forEach(app => {
+      const r = app.getBoundingClientRect();
+      const center = r.left + r.width/2;
+      const dist = Math.abs(mx - center);
+      const maxDist = 100;
+      const scale = dist < maxDist ? 1 + 0.35 * (1 - dist/maxDist) : 1;
+      const lift = dist < maxDist ? -14 * (1 - dist/maxDist) : 0;
+      app.style.transform = `translateY(${lift}px) scale(${scale})`;
+      const label = app.querySelector('.dock-label');
+      if (label) label.style.opacity = dist < 60 ? '1' : '0';
+    });
+  });
+  dock.addEventListener('mouseleave', () => {
+    apps.forEach(app => { app.style.transform = ''; app.querySelector('.dock-label').style.opacity = '0'; });
+  });
+})();
+
+// ─────────────── SYSTEM SETTINGS ───────────────
+const SP_PANELS = [
+  { section: null },
+  { id:'wifi',       icon:'📶', label:'Wi-Fi',            bg:'#007aff' },
+  { id:'bluetooth',  icon:'🔵', label:'Bluetooth',        bg:'#007aff' },
+  { id:'network',    icon:'🌐', label:'Network',          bg:'#007aff' },
+  { section:'General' },
+  { id:'appearance', icon:'🎨', label:'Appearance',       bg:'#636366' },
+  { id:'wallpaper',  icon:'🖼️', label:'Wallpaper',        bg:'#5856d6' },
+  { id:'screensaver',icon:'✨', label:'Screen Saver',     bg:'#30d158' },
+  { id:'notifications',icon:'🔔',label:'Notifications',   bg:'#ff3b30' },
+  { id:'sound',      icon:'🔊', label:'Sound',            bg:'#ff9500' },
+  { id:'focus',      icon:'🌙', label:'Focus',            bg:'#5856d6' },
+  { section:'Hardware' },
+  { id:'displays',   icon:'🖥️', label:'Displays',         bg:'#007aff' },
+  { id:'battery',    icon:'🔋', label:'Battery',          bg:'#30d158' },
+  { id:'keyboard',   icon:'⌨️', label:'Keyboard',         bg:'#636366' },
+  { id:'trackpad',   icon:'🖱️', label:'Trackpad',         bg:'#636366' },
+  { section:'Privacy' },
+  { id:'privacy',    icon:'🔒', label:'Privacy & Security',bg:'#ff3b30' },
+  { id:'users',      icon:'👥', label:'Users & Groups',   bg:'#007aff' },
+  { section:'Intelligence' },
+  { id:'ai',         icon:'✦',  label:'Apple Intelligence',bg:'linear-gradient(135deg,#5856d6,#007aff)' },
+];
+
+// System settings state
+const spState = {
+  darkMode: true, autoAppearance: false, accentColor: '#007aff',
+  wifi: true, bluetooth: true, airdrop: true,
+  notifications: true, focusMode: false,
+  soundVolume: 50, brightness: 75,
+  wallpaper: 'tahoe',
+  battery: { lowPower: false, percentage: true, optimized: true },
+  selectedNav: 'appearance',
+};
+
+function buildSpNav() {
+  const nav = document.getElementById('sp-nav');
+  nav.innerHTML = '';
+  SP_PANELS.forEach(p => {
+    if (p.section !== undefined) {
+      if (p.section) nav.innerHTML += `<div class="sp-nav-section">${p.section}</div>`;
+      return;
+    }
+    const isGrad = p.bg && p.bg.includes('gradient');
+    const iconBg = isGrad ? p.bg : p.bg;
+    nav.innerHTML += `<div class="sp-nav-item${spState.selectedNav===p.id?' active':''}" onclick="spSelectPanel('${p.id}')">
+      <div class="sp-nav-icon" style="background:${iconBg}">${p.icon}</div>${p.label}
+    </div>`;
+  });
+}
+
+function spSelectPanel(id) {
+  spState.selectedNav = id;
+  buildSpNav();
+  renderSpPanel(id);
+}
+
+function renderSpPanel(id) {
+  const c = document.getElementById('sp-content');
+  const panels = {
+    appearance: () => `
+      <div class="sp-section-title">Appearance</div>
+      <div class="sp-card">
+        <div class="sp-row">
+          <div><div class="sp-row-label">Appearance</div></div>
+          <div style="display:flex;gap:8px;">
+            <div onclick="spSet('darkMode',false);renderSpPanel('appearance')" style="padding:5px 14px;border-radius:7px;background:${!spState.darkMode?'var(--accent)':'rgba(255,255,255,0.1)'};color:white;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.15);">Light</div>
+            <div onclick="spSet('darkMode',true);renderSpPanel('appearance')" style="padding:5px 14px;border-radius:7px;background:${spState.darkMode?'var(--accent)':'rgba(255,255,255,0.1)'};color:white;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.15);">Dark</div>
+            <div onclick="spSet('autoAppearance',!spState.autoAppearance);renderSpPanel('appearance')" style="padding:5px 14px;border-radius:7px;background:${spState.autoAppearance?'var(--accent)':'rgba(255,255,255,0.1)'};color:white;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,0.15);">Auto</div>
+          </div>
+        </div>
+        <div class="sp-row">
+          <div class="sp-row-label">Accent Color</div>
+          <div class="sp-accent-grid">
+            ${[['#ff3b30','Red'],['#ff9500','Orange'],['#ffcc00','Yellow'],['#30d158','Green'],['#007aff','Blue'],['#5856d6','Purple'],['#ff2d55','Pink'],['#636366','Graphite']].map(([c,n])=>`<div class="sp-accent-dot${spState.accentColor===c?' selected':''}" style="background:${c}" title="${n}" onclick="spSet('accentColor','${c}');renderSpPanel('appearance')"></div>`).join('')}
+          </div>
+        </div>
+        <div class="sp-row">
+          <div class="sp-row-label">Sidebar icon size</div>
+          <div class="sp-row-value">Medium <span class="sp-chevron">›</span></div>
+        </div>
+        <div class="sp-row">
+          <div class="sp-row-label">Liquid Glass intensity</div>
+          <div style="display:flex;align-items:center;gap:8px;"><input type="range" style="accent-color:var(--accent);width:100px;" min="0" max="100" value="80" /><span style="font-size:12px;color:rgba(255,255,255,0.4);">80%</span></div>
+        </div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Allow wallpaper tinting in windows</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Show scroll bars</div><div class="sp-row-value">Automatically <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Click in the scroll bar to</div><div class="sp-row-value">Jump to spot <span class="sp-chevron">›</span></div></div>
+      </div>`,
+    wallpaper: () => `
+      <div class="sp-section-title">Wallpaper</div>
+      <div class="sp-card" style="padding:14px;">
+        <div style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em;">macOS Wallpapers</div>
+        <div class="sp-wallpaper-grid">
+          ${[['tahoe','🏔️ Tahoe','wp-tahoe'],['tahoe2','🌌 Tahoe Night','wp-tahoe2'],['sonoma','🏞️ Sonoma','wp-sonoma'],['ventura','🌅 Ventura','wp-ventura'],['monterey','🌊 Monterey','wp-monterey'],['bigsur','🌠 Big Sur','wp-bigsur'],['sequoia','🌲 Sequoia','wp-sequoia'],['space','🪐 Space','wp-space']].map(([id,name,cls])=>`
+            <div class="sp-wp-thumb ${cls}${spState.wallpaper===id?' selected':''}" onclick="applyWallpaper('${id}','${cls}')">
+              <div style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:10px;color:rgba(255,255,255,0.7);text-shadow:0 1px 3px rgba(0,0,0,0.8);">${name}</div>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:14px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.5);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em;">Dynamic Desktop</div>
+        <div class="sp-card" style="margin:0;">
+          <div class="sp-row"><div class="sp-row-label">Change wallpaper</div><div class="sp-row-value">Every day <span class="sp-chevron">›</span></div></div>
+          <div class="sp-row"><div class="sp-row-label">Show as screen saver</div><div class="sp-toggle${spState.darkMode?' on':''}" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>`,
+    wifi: () => `
+      <div class="sp-section-title">Wi-Fi</div>
+      <div class="sp-card">
+        <div class="sp-row"><div><div class="sp-row-label">Wi-Fi</div></div><div class="sp-toggle${spState.wifi?' on':''}" onclick="spSet('wifi',!spState.wifi);renderSpPanel('wifi')"></div></div>
+      </div>
+      ${spState.wifi ? `<div class="sp-card">
+        <div class="sp-row" style="background:rgba(0,122,255,0.15);"><div><div class="sp-row-label">✓ Home Network 5G</div><div style="font-size:11px;color:rgba(255,255,255,0.4);">Connected · WPA3 · 802.11ax</div></div><div class="sp-row-value">📶</div></div>
+        ${['Neighbor_WiFi','CafeGuest','AndroidHotspot'].map(n=>`<div class="sp-row"><div class="sp-row-label">${n}</div><div class="sp-row-value">📶 <span class="sp-chevron">›</span></div></div>`).join('')}
+        <div class="sp-row"><div class="sp-row-label" style="color:var(--accent);">Other Network…</div></div>
+      </div>` : `<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);font-size:13px;">Wi-Fi is turned off</div>`}
+      <div class="sp-card"><div class="sp-row"><div class="sp-row-label">Ask to join networks</div><div class="sp-row-value">Notify <span class="sp-chevron">›</span></div></div><div class="sp-row"><div class="sp-row-label">Ask to join hotspots</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div></div>`,
+    bluetooth: () => `
+      <div class="sp-section-title">Bluetooth</div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Bluetooth</div><div class="sp-toggle${spState.bluetooth?' on':''}" onclick="spSet('bluetooth',!spState.bluetooth);renderSpPanel('bluetooth')"></div></div>
+      </div>
+      ${spState.bluetooth ? `<div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">My Devices</div>
+        ${[['AirPods Pro 3','🎧','Connected'],['Apple Watch','⌚','Connected'],['Magic Keyboard','⌨️','Connected'],['Magic Trackpad','🖱️','Connected']].map(([n,i,s])=>`<div class="sp-row"><div style="display:flex;align-items:center;gap:10px;flex:1"><span style="font-size:18px">${i}</span><div><div class="sp-row-label">${n}</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">${s}</div></div></div><div class="sp-row-value">⋯</div></div>`).join('')}
+      </div>` : '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.4);font-size:13px;">Bluetooth is turned off</div>'}`,
+    sound: () => `
+      <div class="sp-section-title">Sound</div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Output Volume</div><div style="display:flex;align-items:center;gap:8px;"><span style="font-size:12px;color:rgba(255,255,255,0.4)">🔉</span><input type="range" style="accent-color:var(--accent);width:120px;" min="0" max="100" value="${spState.soundVolume}" oninput="spSet('soundVolume',+this.value)" /><span style="font-size:12px;color:rgba(255,255,255,0.4)">🔊</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Alert Volume</div><input type="range" style="accent-color:var(--accent);width:120px;" min="0" max="100" value="60" /></div>
+        <div class="sp-row"><div class="sp-row-label">Play sound on startup</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Play user interface sound effects</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Output Device</div>
+        <div class="sp-row" style="background:rgba(0,122,255,0.1)"><div class="sp-row-label">✓ MacBook Pro Speakers</div></div>
+        <div class="sp-row"><div class="sp-row-label">AirPods Pro 3</div><div class="sp-row-value">🎧</div></div>
+      </div>`,
+    battery: () => `
+      <div class="sp-section-title">Battery</div>
+      <div class="sp-card" style="padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div style="font-size:48px;">🔋</div>
+          <div>
+            <div style="font-size:28px;font-weight:300;color:white;">87%</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.5);">Charging · ~1 hr until full</div>
+          </div>
+        </div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Low Power Mode</div><div class="sp-toggle${spState.battery.lowPower?' on':''}" onclick="spState.battery.lowPower=!spState.battery.lowPower;renderSpPanel('battery')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Show battery percentage</div><div class="sp-toggle${spState.battery.percentage?' on':''}" onclick="spState.battery.percentage=!spState.battery.percentage;renderSpPanel('battery')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Optimized Battery Charging</div><div class="sp-toggle${spState.battery.optimized?' on':''}" onclick="spState.battery.optimized=!spState.battery.optimized;renderSpPanel('battery')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Turn display off when inactive</div><div class="sp-row-value">5 min <span class="sp-chevron">›</span></div></div>
+      </div>`,
+    notifications: () => `
+      <div class="sp-section-title">Notifications</div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Show notifications on lock screen</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Show in Notification Center</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Badge app icon</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Application Notifications</div>
+        ${[['✉️','Mail','Banners'],['📅','Calendar','Alerts'],['💬','Messages','Banners'],['🔔','Reminders','Alerts'],['📰','News','Banners'],['🎵','Music','None']].map(([i,n,s])=>`<div class="sp-row"><div style="display:flex;align-items:center;gap:10px;flex:1"><span>${i}</span><div class="sp-row-label">${n}</div></div><div class="sp-row-value">${s} <span class="sp-chevron">›</span></div></div>`).join('')}
+      </div>`,
+    privacy: () => `
+      <div class="sp-section-title">Privacy & Security</div>
+      <div class="sp-card">
+        <div class="sp-row" onclick=""><div class="sp-row-label">🔍 Location Services</div><div class="sp-row-value">On <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">📸 Camera</div><div class="sp-row-value">2 apps <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">🎤 Microphone</div><div class="sp-row-value">3 apps <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">📋 Contacts</div><div class="sp-row-value">5 apps <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">📅 Calendars</div><div class="sp-row-value">2 apps <span class="sp-chevron">›</span></div></div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-row"><div><div class="sp-row-label">FileVault</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Full Disk Encryption</div></div><div class="sp-row-value" style="color:#30d158">On <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div><div class="sp-row-label">Firewall</div></div><div class="sp-row-value" style="color:#30d158">On <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Lockdown Mode</div><div class="sp-row-value">Off <span class="sp-chevron">›</span></div></div>
+      </div>`,
+    ai: () => `
+      <div class="sp-section-title" style="background:linear-gradient(90deg,#5856d6,#007aff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Apple Intelligence</div>
+      <div class="sp-card">
+        <div class="sp-row"><div><div class="sp-row-label">Apple Intelligence</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">AI features powered on-device</div></div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Writing Tools</div>
+        <div class="sp-row"><div class="sp-row-label">Show Writing Tools in apps</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Summarize notifications</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Priority notifications</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Siri with Apple Intelligence</div>
+        <div class="sp-row"><div class="sp-row-label">Enhanced Siri</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Talk to Claude</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">ChatGPT integration</div><div class="sp-toggle" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Image Playground</div>
+        <div class="sp-row"><div class="sp-row-label">Image generation</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Genmoji</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>`,
+    displays: () => `
+      <div class="sp-section-title">Displays</div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Resolution</div><div class="sp-row-value">Default for display <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Brightness</div><input type="range" style="accent-color:var(--accent);width:130px" min="0" max="100" value="75" /></div>
+        <div class="sp-row"><div class="sp-row-label">Automatically adjust brightness</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">True Tone</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Night Shift</div><div class="sp-row-value">Sunset to Sunrise <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Refresh rate</div><div class="sp-row-value">ProMotion <span class="sp-chevron">›</span></div></div>
+      </div>`,
+    keyboard: () => `
+      <div class="sp-section-title">Keyboard</div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Key repeat rate</div><input type="range" style="accent-color:var(--accent);width:130px" min="0" max="100" value="70" /></div>
+        <div class="sp-row"><div class="sp-row-label">Delay until repeat</div><input type="range" style="accent-color:var(--accent);width:130px" min="0" max="100" value="50" /></div>
+        <div class="sp-row"><div class="sp-row-label">Adjust keyboard brightness</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Keyboard backlight off after</div><div class="sp-row-value">5 secs <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Press Globe key to</div><div class="sp-row-value">Show Emoji & Symbols <span class="sp-chevron">›</span></div></div>
+      </div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Autocorrect</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Capitalize words automatically</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Add period with double-space</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>`,
+    users: () => `
+      <div class="sp-section-title">Users & Groups</div>
+      <div class="sp-card">
+        <div class="sp-row">
+          <div class="sp-avatar" style="width:34px;height:34px;font-size:16px;">👤</div>
+          <div style="flex:1"><div class="sp-row-label">Alex Johnson</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">Admin · Current User</div></div>
+          <div class="sp-chevron">›</div>
+        </div>
+      </div>
+      <div class="sp-card">
+        <div style="padding:10px 16px;font-size:11px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">Login Options</div>
+        <div class="sp-row"><div class="sp-row-label">Automatic login</div><div class="sp-row-value">Off <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Show Sleep, Restart & Shut Down buttons</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Allow Touch ID login</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>`,
+    network: () => `
+      <div class="sp-section-title">Network</div>
+      <div class="sp-card">
+        ${[['Wi-Fi','📶','Home Network 5G','✅'],['Ethernet','🔌','Not connected','❌'],['VPN','🔒','Disconnected','❌'],['Firewall','🛡️','Active','✅']].map(([n,i,s,st])=>`<div class="sp-row"><span style="font-size:16px">${i}</span><div style="flex:1"><div class="sp-row-label">${n}</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">${s}</div></div><span>${st}</span><span class="sp-chevron">›</span></div>`).join('')}
+      </div>`,
+    trackpad: () => `
+      <div class="sp-section-title">Trackpad</div>
+      <div class="sp-card">
+        <div class="sp-row"><div class="sp-row-label">Tracking speed</div><input type="range" style="accent-color:var(--accent);width:130px" min="0" max="10" value="6" /></div>
+        <div class="sp-row"><div class="sp-row-label">Click</div><div class="sp-row-value">Medium <span class="sp-chevron">›</span></div></div>
+        <div class="sp-row"><div class="sp-row-label">Force Click</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Tap to click</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="sp-row"><div class="sp-row-label">Natural scrolling</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+      </div>`,
+    focus: () => `
+      <div class="sp-section-title">Focus</div>
+      <div class="sp-card">
+        ${[['🌙 Do Not Disturb','Active until 9:00 AM'],['🏠 Personal','Weekday evenings'],['💼 Work','Weekdays 9AM–5PM'],['😴 Sleep','11 PM – 7 AM'],['🎮 Gaming','Custom']].map(([n,s])=>`<div class="sp-row"><div style="flex:1"><div class="sp-row-label">${n}</div><div style="font-size:11px;color:rgba(255,255,255,0.4)">${s}</div></div><span class="sp-chevron">›</span></div>`).join('')}
+        <div class="sp-row" style="cursor:pointer;color:var(--accent)"><div style="font-size:13px;color:var(--accent)">+ Add Focus</div></div>
+      </div>`,
+    screensaver: () => `
+      <div class="sp-section-title">Screen Saver</div>
+      <div class="sp-card" style="padding:14px;">
+        <div style="aspect-ratio:16/10;border-radius:10px;overflow:hidden;margin-bottom:14px;background:linear-gradient(135deg,#0b0f2a,#1a1060);display:flex;align-items:center;justify-content:center;">
+          <div style="font-size:48px;animation:logoPop 2s ease-in-out infinite alternate;">🍎</div>
+        </div>
+        <div class="sp-card" style="margin:0;">
+          <div class="sp-row"><div class="sp-row-label">Start after</div><div class="sp-row-value">10 minutes <span class="sp-chevron">›</span></div></div>
+          <div class="sp-row"><div class="sp-row-label">Show with clock</div><div class="sp-toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>`,
+  };
+  const renderFn = panels[id];
+  c.innerHTML = renderFn ? renderFn() : `<div class="sp-section-title">${id}</div><div style="color:rgba(255,255,255,0.4);font-size:13px;">Settings panel coming soon.</div>`;
+}
+
+function spSet(key, val) { spState[key] = val; }
+
+function applyWallpaper(id, cls) {
+  spState.wallpaper = id;
+  // Update the actual wallpaper
+  const wpEl = document.getElementById('wallpaper');
+  const wpMap = {
+    'tahoe':    'radial-gradient(ellipse 80% 60% at 20% 30%, rgba(60,120,255,0.55) 0%, transparent 65%), radial-gradient(ellipse 60% 80% at 80% 70%, rgba(120,60,255,0.45) 0%, transparent 65%), linear-gradient(160deg, #0b0f2a 0%, #1a1060 40%, #0d1f3a 70%, #0a0a1a 100%)',
+    'tahoe2':   'radial-gradient(ellipse at 30% 40%,rgba(80,160,255,0.7),transparent 60%),linear-gradient(160deg,#050a1a,#0d1840)',
+    'sonoma':   'linear-gradient(135deg,#8B4513,#D2691E,#F4A460,#87CEEB)',
+    'ventura':  'linear-gradient(135deg,#ff6b35,#f7c59f,#efefd0,#004e89)',
+    'monterey': 'linear-gradient(135deg,#00c6ff,#0072ff,#00c6ff)',
+    'bigsur':   'linear-gradient(135deg,#667eea,#764ba2)',
+    'sequoia':  'linear-gradient(135deg,#134e5e,#71b280)',
+    'space':    'linear-gradient(135deg,#0f0c29,#302b63,#24243e)',
+  };
+  if (wpMap[id]) wpEl.style.background = wpMap[id];
+  renderSpPanel('wallpaper');
+  showToast('🖼️', 'System Settings', 'Wallpaper changed', 'New wallpaper applied to your desktop.');
+}
+
+function openSysPref(panel) {
+  showWindow('syspref-window');
+  bounceDock('dock-syspref');
+  updateDots('syspref-window', true);
+  buildSpNav();
+  const p = panel || spState.selectedNav;
+  renderSpPanel(p);
+}
+
+// ─────────────── ABOUT THIS MAC ───────────────
+function openAbout() {
+  document.getElementById('about-mac-overlay').classList.add('show');
+  document.querySelectorAll('.dropdown.show').forEach(d => d.classList.remove('show'));
+}
+function closeAbout() {
+  document.getElementById('about-mac-overlay').classList.remove('show');
+}
+
+// ─────────────── CALCULATOR ───────────────
+const calcBtns = [
+  ['AC','fn','ac'], ['+/-','fn','neg'], ['%','fn','pct'], ['÷','op','div'],
+  ['7','num','7'],  ['8','num','8'],    ['9','num','9'],  ['×','op','mul'],
+  ['4','num','4'],  ['5','num','5'],    ['6','num','6'],  ['−','op','sub'],
+  ['1','num','1'],  ['2','num','2'],    ['3','num','3'],  ['+','op','add'],
+  ['0','num zero','0'], ['.','num','dot'], ['=','eq','eq'],
+];
+
+let calcVal = '0', calcPrev = null, calcOp = null, calcNew = true, calcExpr = '';
+
+function buildCalc() {
+  const grid = document.getElementById('calc-buttons');
+  if (!grid) return;
+  grid.innerHTML = '';
+  calcBtns.forEach(([label, cls, id]) => {
+    const btn = document.createElement('button');
+    btn.className = `calc-btn ${cls}`;
+    btn.textContent = label;
+    btn.dataset.id = id;
+    btn.addEventListener('click', () => calcPress(id, label));
+    grid.appendChild(btn);
+  });
+}
+
+function calcPress(id, label) {
+  const display = document.getElementById('calc-result');
+  const exprEl  = document.getElementById('calc-expr');
+  if (id === 'ac') { calcVal='0'; calcPrev=null; calcOp=null; calcNew=true; calcExpr=''; }
+  else if (id === 'neg') { calcVal = String(-parseFloat(calcVal)||0); }
+  else if (id === 'pct') { calcVal = String(parseFloat(calcVal)/100); }
+  else if (['div','mul','sub','add'].includes(id)) {
+    if (calcOp && !calcNew) { calcPrev = doCalc(calcPrev, parseFloat(calcVal), calcOp); calcVal = String(calcPrev); }
+    else { calcPrev = parseFloat(calcVal); }
+    calcOp = id; calcNew = true;
+    calcExpr = calcVal + ' ' + {div:'÷',mul:'×',sub:'−',add:'+'}[id];
+    document.querySelectorAll('.calc-btn.op').forEach(b => b.classList.remove('active-op'));
+    document.querySelectorAll('.calc-btn.op').forEach(b => { if (b.dataset.id===id) b.classList.add('active-op'); });
+  }
+  else if (id === 'dot') { if (!calcVal.includes('.')) { calcVal += '.'; calcNew = false; } }
+  else if (id === 'eq') {
+    if (calcOp && calcPrev !== null) {
+      const res = doCalc(calcPrev, parseFloat(calcVal), calcOp);
+      calcExpr = calcPrev + ' ' + {div:'÷',mul:'×',sub:'−',add:'+'}[calcOp] + ' ' + calcVal + ' =';
+      calcVal = String(Number.isInteger(res) ? res : +res.toFixed(10));
+      calcOp = null; calcPrev = null; calcNew = true;
+      document.querySelectorAll('.calc-btn.op').forEach(b => b.classList.remove('active-op'));
+    }
+  }
+  else { // digit
+    if (calcNew) { calcVal = label; calcNew = false; }
+    else { calcVal = calcVal === '0' ? label : calcVal + label; }
+  }
+  // Format display
+  const num = parseFloat(calcVal);
+  const formatted = isNaN(num) ? 'Error' : (calcVal.endsWith('.') ? calcVal : (String(num).length > 12 ? num.toExponential(4) : calcVal));
+  display.textContent = formatted;
+  display.style.fontSize = formatted.length > 10 ? '28px' : formatted.length > 7 ? '34px' : '42px';
+  exprEl.textContent = calcExpr;
+}
+function doCalc(a, b, op) {
+  if (op==='add') return a+b; if (op==='sub') return a-b;
+  if (op==='mul') return a*b; if (op==='div') return b===0 ? 'Error' : a/b;
+  return b;
+}
+function openCalc() {
+  showWindow('calc-window');
+  bounceDock('dock-calc');
+  updateDots('calc-window', true);
+  buildCalc();
+}
+
+// ─────────────── CALENDAR ───────────────
+let calDate = new Date();
+const calEvents = {
+  [fmt(new Date())]: [
+    {title:'Team Standup',time:'9:00 AM',color:'#007aff'},
+    {title:'Lunch w/ Sarah',time:'12:30 PM',color:'#ff9500'},
+  ],
+  [fmt(new Date(new Date().setDate(new Date().getDate()+1)))]: [
+    {title:'Design Review',time:'10:00 AM',color:'#5856d6'},
+    {title:'1:1 with Manager',time:'3:00 PM',color:'#30d158'},
+  ],
+  [fmt(new Date(new Date().setDate(new Date().getDate()+3)))]: [
+    {title:'WWDC Keynote',time:'10:00 AM',color:'#ff3b30'},
+  ],
+  [fmt(new Date(new Date().setDate(new Date().getDate()-2)))]: [
+    {title:'Sprint Planning',time:'9:30 AM',color:'#ff9500'},
+    {title:'Product Demo',time:'2:00 PM',color:'#007aff'},
+  ],
+};
+function fmt(d) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+let calSelectedDate = fmt(new Date());
+
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const today = new Date(); const todayStr = fmt(today);
+  document.getElementById('cal-month-title').textContent = months[calDate.getMonth()] + ' ' + calDate.getFullYear();
+  const header = document.getElementById('cal-grid-header');
+  header.innerHTML = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  const firstDay = new Date(calDate.getFullYear(), calDate.getMonth(), 1).getDay();
+  const daysInMonth = new Date(calDate.getFullYear(), calDate.getMonth()+1, 0).getDate();
+  const prevDays = new Date(calDate.getFullYear(), calDate.getMonth(), 0).getDate();
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+  let cells = [];
+  for (let i = firstDay-1; i >= 0; i--) cells.push({day: prevDays-i, cur: false});
+  for (let i = 1; i <= daysInMonth; i++) cells.push({day: i, cur: true});
+  while (cells.length < 42) cells.push({day: cells.length - daysInMonth - firstDay + 1, cur: false});
+  cells.forEach(({day, cur}) => {
+    const d = new Date(calDate.getFullYear(), calDate.getMonth() + (cur?0: day>20?-1:1), day);
+    const dStr = fmt(d);
+    const isToday = dStr === todayStr;
+    const isSelected = dStr === calSelectedDate;
+    const hasEvents = calEvents[dStr];
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell' + (isToday?' today':'') + (isSelected?' selected':'') + (!cur?' other-month':'');
+    cell.innerHTML = `<div class="cal-cell-num">${day}</div>${hasEvents?hasEvents.map(e=>`<div class="cal-event-dot" style="background:${e.color}"></div>`).join(''):''}`;
+    cell.onclick = () => { calSelectedDate = dStr; renderCalendar(); renderCalSidebar(); };
+    grid.appendChild(cell);
+  });
+  renderCalSidebar();
+}
+
+function renderCalSidebar() {
+  const sb = document.getElementById('cal-sidebar');
+  const events = calEvents[calSelectedDate] || [];
+  const d = new Date(calSelectedDate+'T12:00:00');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  sb.innerHTML = `<div class="cal-sidebar-title">${days[d.getDay()]}, ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>`;
+  if (events.length === 0) {
+    sb.innerHTML += `<div style="font-size:12px;color:rgba(255,255,255,0.3);padding:10px 0;">No events</div>`;
+  }
+  events.forEach(ev => {
+    sb.innerHTML += `<div class="cal-event-item" style="background:${ev.color}22;border-left:3px solid ${ev.color};">
+      <div class="cal-event-title">${ev.title}</div><div class="cal-event-time">${ev.time}</div>
+    </div>`;
+  });
+  sb.innerHTML += `<div style="margin-top:12px;font-size:12px;color:var(--accent);cursor:pointer;">+ New Event</div>`;
+}
+
+function calNav(dir) {
+  calDate = new Date(calDate.getFullYear(), calDate.getMonth() + dir, 1);
+  renderCalendar();
+}
+function calGoToday() { calDate = new Date(); calSelectedDate = fmt(calDate); renderCalendar(); }
+
+function openCalendar() {
+  showWindow('calendar-window');
+  bounceDock('dock-calendar');
+  updateDots('calendar-window', true);
+  renderCalendar();
+}
+
+// ─────────────── MUSIC ───────────────
+const TRACKS = [
+  {title:'Blinding Lights',  artist:'The Weeknd',    album:'After Hours',   dur:'3:20',art:'linear-gradient(135deg,#fc3c44,#ff6b9d)',   secs:200},
+  {title:'Levitating',       artist:'Dua Lipa',      album:'Future Nostalgia',dur:'3:24',art:'linear-gradient(135deg,#bf5af2,#5856d6)', secs:204},
+  {title:'Peaches',          artist:'Justin Bieber', album:'Justice',        dur:'3:18',art:'linear-gradient(135deg,#ff9500,#ff3b30)',   secs:198},
+  {title:'Good 4 U',         artist:'Olivia Rodrigo',album:'SOUR',           dur:'2:58',art:'linear-gradient(135deg,#30d158,#007aff)',   secs:178},
+  {title:'Stay',             artist:'Kid LAROI',     album:'F*CK LOVE 3',    dur:'2:22',art:'linear-gradient(135deg,#5ac8fa,#007aff)',   secs:142},
+  {title:'Heat Waves',       artist:'Glass Animals', album:'Dreamland',      dur:'3:59',art:'linear-gradient(135deg,#ffcc00,#ff9500)',   secs:239},
+  {title:'Shivers',          artist:'Ed Sheeran',    album:'=',              dur:'3:27',art:'linear-gradient(135deg,#ff6b35,#ff3b30)',   secs:207},
+  {title:'Industry Baby',    artist:'Lil Nas X',     album:'MONTERO',        dur:'3:32',art:'linear-gradient(135deg,#636366,#3a3a3c)',   secs:212},
+];
+
+let musicIdx = 0, musicPlaying = true, musicProgress = 35, musicTick = null;
+
+function renderMusicList() {
+  const list = document.getElementById('music-track-list');
+  if (!list) return;
+  list.innerHTML = '';
+  TRACKS.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'music-track-row' + (i===musicIdx?' playing':'');
+    row.innerHTML = `<div class="music-track-num">${i===musicIdx?'▶':i+1}</div>
+      <div class="music-track-info"><div class="music-track-t">${t.title}</div><div class="music-track-a">${t.artist}</div></div>
+      <div class="music-track-dur">${t.dur}</div>`;
+    row.onclick = () => { musicIdx = i; musicProgress = 0; musicPlaying = true; updateMusicNowPlaying(); renderMusicList(); startMusicTick(); };
+    list.appendChild(row);
+  });
+}
+
+function updateMusicNowPlaying() {
+  const t = TRACKS[musicIdx];
+  document.getElementById('music-art').style.background = t.art;
+  document.getElementById('music-track-name').textContent = t.title;
+  document.getElementById('music-track-artist').textContent = t.artist + ' · ' + t.album;
+  document.getElementById('music-duration').textContent = t.dur;
+  document.getElementById('music-play-btn').textContent = musicPlaying ? '⏸' : '▶';
+  updateMusicProgress();
+}
+
+function updateMusicProgress() {
+  const t = TRACKS[musicIdx];
+  const pct = Math.min(100, (musicProgress / t.secs) * 100);
+  const fill = document.getElementById('music-fill');
+  const elapsed = document.getElementById('music-elapsed');
+  if (fill) fill.style.width = pct + '%';
+  if (elapsed) elapsed.textContent = Math.floor(musicProgress/60)+':'+String(Math.floor(musicProgress%60)).padStart(2,'0');
+}
+
+function startMusicTick() {
+  clearInterval(musicTick);
+  if (!musicPlaying) return;
+  musicTick = setInterval(() => {
+    if (!musicPlaying) return;
+    musicProgress++;
+    if (musicProgress >= TRACKS[musicIdx].secs) { musicNext(); return; }
+    updateMusicProgress();
+  }, 1000);
+}
+
+function musicToggle() {
+  musicPlaying = !musicPlaying;
+  document.getElementById('music-play-btn').textContent = musicPlaying ? '⏸' : '▶';
+  if (musicPlaying) startMusicTick(); else clearInterval(musicTick);
+}
+function musicNext() {
+  musicIdx = (musicIdx+1) % TRACKS.length;
+  musicProgress = 0;
+  updateMusicNowPlaying();
+  renderMusicList();
+  if (musicPlaying) startMusicTick();
+}
+function musicPrev() {
+  if (musicProgress > 5) { musicProgress = 0; updateMusicProgress(); return; }
+  musicIdx = (musicIdx - 1 + TRACKS.length) % TRACKS.length;
+  musicProgress = 0;
+  updateMusicNowPlaying();
+  renderMusicList();
+}
+function musicShuffle() { musicIdx = Math.floor(Math.random()*TRACKS.length); musicProgress=0; updateMusicNowPlaying(); renderMusicList(); }
+function musicSeek(e) {
+  const bar = e.currentTarget;
+  const pct = e.offsetX / bar.offsetWidth;
+  musicProgress = Math.floor(pct * TRACKS[musicIdx].secs);
+  updateMusicProgress();
+}
+function musicNav(el, section) {
+  document.querySelectorAll('.music-nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+}
+function openMusic() {
+  showWindow('music-window');
+  bounceDock('dock-music');
+  updateDots('music-window', true);
+  renderMusicList();
+  updateMusicNowPlaying();
+  startMusicTick();
+}
+
+// ─────────────── DOCK CALENDAR DATE ───────────────
+function updateDockCalendar() {
+  const n = new Date();
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const m = document.getElementById('dock-cal-month');
+  const d = document.getElementById('dock-cal-day');
+  if (m) m.textContent = months[n.getMonth()];
+  if (d) d.textContent = n.getDate();
+}
+updateDockCalendar();
+setInterval(updateDockCalendar, 60000);
+
+// ─────────────── UPDATE SYSPREF DOTS ───────────────
+const origUpdateDots = updateDots;
+function updateDots(winId, visible) {
+  const map = {
+    'finder-window':'dot-finder','safari-window':'dot-safari',
+    'notes-window':'dot-notes','terminal-window':'dot-terminal',
+    'syspref-window':'dot-syspref','calc-window':'dot-calc',
+    'calendar-window':'dot-calendar','music-window':'dot-music',
+  };
+  const dot = document.getElementById(map[winId]);
+  if (dot) dot.classList.toggle('hidden', !visible);
+}
+
+// Add syspref to spotlight
+spotlightItems.push(
+  {icon:'⚙️',name:'System Settings',type:'Application',action:openSysPref},
+  {icon:'🖩',name:'Calculator',type:'Application',action:openCalc},
+  {icon:'📅',name:'Calendar',type:'Application',action:openCalendar},
+  {icon:'🎵',name:'Music',type:'Application',action:openMusic}
+);
+
+// ─────────────── MAIL ───────────────
+const MAIL_DATA = {
+  inbox: [
+    {id:0,from:'Sarah Kim',subj:'Re: Design Mockups',prev:'Looks amazing! I especially love the new...',time:'9:41 AM',unread:true,body:'Hi!\n\nLooks amazing! I especially love the new Liquid Glass effects you applied to the toolbar. The translucency really makes it feel premium.\n\nCan you also adjust the button radius on the settings panel? I think 12px might look more cohesive.\n\nThanks!\nSarah'},
+    {id:1,from:'Apple',subj:'Your receipt from Apple',prev:'Order #W1234567890 - MacBook Pro 16"...',time:'8:15 AM',unread:true,body:'Dear Alex,\n\nThank you for your purchase.\n\nOrder #W1234567890\nMacBook Pro 16" M4 Pro: $2,499.00\nAppleCare+: $379.00\n\nTotal: $3,136.96\n\nExpected delivery: Tuesday, May 5\n\nThank you for shopping with Apple.'},
+    {id:2,from:'GitHub',subj:'[project] New pull request #142',prev:'@devuser opened PR: Add dark mode...',time:'Yesterday',unread:true,body:'@devuser opened pull request #142\n\n"Add dark mode support for dashboard components"\n\nFiles changed: 14 | +342 -28\n\nReviewers requested: you\n\nView on GitHub.'},
+    {id:3,from:'Anthropic',subj:'Welcome to Claude Enterprise',prev:'Your team has been upgraded...',time:'Yesterday',unread:true,body:'Hi Alex,\n\nYour team at Acme Corp has been upgraded to Claude Enterprise.\n\nYou now have access to:\n- Extended context window (200K tokens)\n- Priority API access\n- Advanced admin controls\n- Usage analytics dashboard\n\nGet started at console.anthropic.com\n\nThe Anthropic Team'},
+    {id:4,from:'Alex Chen',subj:'Weekend plans?',prev:'Hey are you coming to the hiking trip...',time:'Mon',unread:false,body:'Hey!\n\nAre you coming to the hiking trip this Saturday? Meeting at Rattlesnake Ledge trailhead at 8 AM.\n\nBring water, snacks, layers. Forecast: partly cloudy, 62F.\n\nLet me know!\nAlex'},
+    {id:5,from:'Notion',subj:'Weekly digest: 3 updates',prev:'Your workspace has new activity...',time:'Sun',unread:false,body:'Here\'s what happened in your Notion workspace this week:\n\n- Project Roadmap: 2 edits by Sarah K.\n- Design System: New page created by you\n- Sprint Planning: 5 tasks completed\n\nView your workspace at notion.so'},
+  ],
+  sent:[{id:10,from:'To: Sarah Kim',subj:'Re: Design Mockups',prev:'Thanks Sarah! Will update today...',time:'10:02 AM',unread:false,body:'Hi Sarah,\n\nThanks! Will update the radius to 12px today and send you the updated Figma link.\n\nAlex'}],
+  drafts:[{id:20,from:'Draft',subj:'Project Update - Q2 Summary',prev:'Hey team, here is a quick summary...',time:'Yesterday',unread:false,body:'Hey team,\n\nHere is a quick summary of our Q2 progress...\n\n[Draft - not sent]'}],
+  junk:[],trash:[],
+};
+MAIL_DATA.unread = MAIL_DATA.inbox.filter(m=>m.unread);
+MAIL_DATA.flagged = [MAIL_DATA.inbox[1]];
+MAIL_DATA.all = [...MAIL_DATA.inbox];
+
+let mailCurrentBox = 'inbox', mailSelectedId = null;
+
+function openMail() {
+  showWindow('mail-window');
+  bounceDock('dock-mail');
+  renderMailList();
+}
+function mailSelectBox(el, box) {
+  document.querySelectorAll('.mail-nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  mailCurrentBox = box;
+  renderMailList();
+}
+function renderMailList() {
+  const msgs = MAIL_DATA[mailCurrentBox] || [];
+  const list = document.getElementById('mail-msg-list');
+  const title = document.getElementById('mail-box-title');
+  const count = document.getElementById('mail-box-count');
+  const labels = {inbox:'Inbox',sent:'Sent',drafts:'Drafts',junk:'Junk',trash:'Trash',unread:'Unread',flagged:'Flagged',all:'All Mail'};
+  title.textContent = labels[mailCurrentBox] || mailCurrentBox;
+  const unreadCount = msgs.filter(m=>m.unread).length;
+  count.textContent = unreadCount || msgs.length;
+  count.style.display = (unreadCount || msgs.length) ? '' : 'none';
+  list.innerHTML = '';
+  if (!msgs.length) { list.innerHTML = '<div style="text-align:center;padding:30px;color:rgba(255,255,255,0.3);font-size:13px;">No messages</div>'; return; }
+  msgs.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'mail-msg-row' + (m.unread?' unread':'') + (m.id===mailSelectedId?' active':'');
+    row.innerHTML = `<div class="mail-msg-from">${m.from}</div><div class="mail-msg-time">${m.time}</div><div class="mail-msg-subj">${m.subj}</div><div class="mail-msg-prev">${m.prev}</div>`;
+    row.onclick = () => { mailSelectedId = m.id; m.unread = false; row.classList.remove('unread'); document.querySelectorAll('.mail-msg-row').forEach(r=>r.classList.remove('active')); row.classList.add('active'); showMailReader(m); };
+    list.appendChild(row);
+  });
+}
+function showMailReader(m) {
+  document.getElementById('mail-reader').innerHTML = `<div class="mail-reader-from">${m.from}</div><div class="mail-reader-subj">${m.subj}</div><div class="mail-reader-meta">${m.time} &middot; To: alex@example.com</div><div class="mail-reader-body" style="white-space:pre-wrap;">${m.body}</div><div style="margin-top:24px;display:flex;gap:8px;"><button onclick="showToast('✉️','Mail','Reply sent','Your reply has been sent.')" style="background:var(--accent);border:none;border-radius:8px;padding:7px 16px;color:white;font-size:13px;cursor:pointer;font-family:var(--font);">&#8629; Reply</button><button style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:7px 16px;color:white;font-size:13px;cursor:pointer;font-family:var(--font);">Forward</button></div>`;
+}
+function openCompose() { showToast('✉️','Mail','New Message','Compose window opened.'); }
+
+// ─────────────── PHOTOS ───────────────
+const PHOTO_PALETTES = [
+  ['linear-gradient(135deg,#667eea,#764ba2)','🌅'],['linear-gradient(135deg,#f093fb,#f5576c)','🌸'],
+  ['linear-gradient(135deg,#4facfe,#00f2fe)','🌊'],['linear-gradient(135deg,#43e97b,#38f9d7)','🌿'],
+  ['linear-gradient(135deg,#fa709a,#fee140)','🌇'],['linear-gradient(135deg,#a18cd1,#fbc2eb)','🌙'],
+  ['linear-gradient(135deg,#ffecd2,#fcb69f)','🍂'],['linear-gradient(135deg,#ff9a9e,#fad0c4)','🌺'],
+  ['linear-gradient(135deg,#a1c4fd,#c2e9fb)','❄️'],['linear-gradient(135deg,#d4fc79,#96e6a1)','🌻'],
+  ['linear-gradient(135deg,#30cfd0,#330867)','🌌'],['linear-gradient(135deg,#f6d365,#fda085)','🌞'],
+  ['linear-gradient(135deg,#89f7fe,#66a6ff)','🏔️'],['linear-gradient(135deg,#fddb92,#d1fdff)','🏖️'],
+  ['linear-gradient(135deg,#a8edea,#fed6e3)','🌷'],['linear-gradient(135deg,#5ee7df,#b490ca)','🎆'],
+  ['linear-gradient(135deg,#e0c3fc,#8ec5fc)','🔮'],['linear-gradient(135deg,#ff0844,#ffb199)','❤️'],
+  ['linear-gradient(135deg,#0ba360,#3cba92)','🌲'],['linear-gradient(135deg,#fccb90,#d57eeb)','🎇'],
+  ['linear-gradient(135deg,#e8198b,#c7eafd)','🌈'],['linear-gradient(135deg,#00c6fb,#005bea)','🐋'],
+  ['linear-gradient(135deg,#48c6ef,#6f86d6)','🗻'],['linear-gradient(135deg,#f5f7fa,#c3cfe2)','🌫️'],
+];
+function renderPhotosGrid(section) {
+  const grid = document.getElementById('photos-grid');
+  if (!grid) return;
+  document.getElementById('photos-title').textContent = section;
+  const count = 24;
+  const palettes = [];
+  while (palettes.length < count) palettes.push(...PHOTO_PALETTES.slice(0, count - palettes.length));
+  grid.innerHTML = '';
+  palettes.slice(0,count).forEach(([bg, icon], i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.style.background = bg;
+    thumb.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;opacity:0.7">${icon}</div>`;
+    thumb.onclick = (e) => {
+      if (e.shiftKey) { thumb.classList.toggle('selected'); return; }
+      showQuickLook(icon, 'Photo_'+(i+1)+'.jpg', (Math.random()*4+2).toFixed(1)+' MB · 4032x3024 · '+['iPhone 16 Pro','iPhone 15','Canon EOS R5'][i%3]);
+    };
+    grid.appendChild(thumb);
+  });
+}
+function photosNav(el, section) {
+  document.querySelectorAll('.photos-nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  renderPhotosGrid(el.textContent.trim().replace(/^[^\s]+ /,''));
+}
+function openPhotos() {
+  showWindow('photos-window');
+  bounceDock('dock-photos');
+  renderPhotosGrid('Recents');
+}
+
+// ─────────────── LAUNCHPAD ───────────────
+const LP_APPS = [
+  {label:'Finder',   bg:'linear-gradient(135deg,#4facfe,#00f2fe)', icon:'🗂️', action:openFinder},
+  {label:'Safari',   bg:'linear-gradient(135deg,#007aff,#5856d6)', icon:'🌐', action:openSafari},
+  {label:'Mail',     bg:'linear-gradient(135deg,#007aff,#5ac8fa)', icon:'✉️', action:openMail},
+  {label:'Notes',    bg:'linear-gradient(135deg,#ffcc00,#ff9500)', icon:'📝', action:openNotes},
+  {label:'Music',    bg:'linear-gradient(135deg,#fc3c44,#ff6b9d)', icon:'🎵', action:openMusic},
+  {label:'Photos',   bg:'linear-gradient(135deg,#ff9500,#ff3b30,#af52de,#5ac8fa)', icon:'🖼️', action:openPhotos},
+  {label:'Calendar', bg:'linear-gradient(135deg,#ff3b30,#ff6b35)', icon:'📅', action:openCalendar},
+  {label:'Terminal', bg:'linear-gradient(135deg,#000,#333)',        icon:'⬛', action:openTerminal},
+  {label:'Calc',     bg:'linear-gradient(135deg,#1c1c1e,#3a3a3c)', icon:'🖩', action:openCalc},
+  {label:'Weather',  bg:'linear-gradient(135deg,#007aff,#00c6ff)', icon:'🌤️', action:openWeather},
+  {label:'Siri',     bg:'linear-gradient(135deg,#5856d6,#007aff)', icon:'🎙️', action:openSiri},
+  {label:'Settings', bg:'linear-gradient(135deg,#636366,#8e8e93)', icon:'⚙️', action:openSysPref},
+  {label:'App Store',bg:'linear-gradient(135deg,#007aff,#5856d6)', icon:'🛍️', action:null},
+  {label:'Xcode',    bg:'linear-gradient(135deg,#1d6fa4,#6bcbf7)', icon:'🔨', action:null},
+  {label:'Logic Pro',bg:'linear-gradient(135deg,#1c1c1e,#444)',    icon:'🎛️', action:null},
+  {label:'FaceTime', bg:'linear-gradient(135deg,#30d158,#25a244)', icon:'📹', action:null},
+  {label:'Podcasts', bg:'linear-gradient(135deg,#bf5af2,#9b40cc)', icon:'🎙️', action:null},
+  {label:'Books',    bg:'linear-gradient(135deg,#ff9500,#e6850e)', icon:'📚', action:null},
+  {label:'Messages', bg:'linear-gradient(135deg,#30d158,#007aff)', icon:'💬', action:null},
+  {label:'Maps',     bg:'linear-gradient(135deg,#30d158,#34aadc)', icon:'🗺️', action:null},
+  {label:'Reminders',bg:'linear-gradient(135deg,#ff3b30,#ff6961)', icon:'🔔', action:null},
+];
+function openLaunchpad() {
+  document.getElementById('launchpad-overlay').classList.add('show');
+  document.getElementById('launchpad-search').value = '';
+  renderLaunchpad(LP_APPS);
+}
+function closeLaunchpad(e) {
+  if (e && e.target !== document.getElementById('launchpad-overlay')) return;
+  document.getElementById('launchpad-overlay').classList.remove('show');
+}
+function renderLaunchpad(apps) {
+  const grid = document.getElementById('launchpad-grid');
+  grid.innerHTML = '';
+  apps.forEach(app => {
+    const el = document.createElement('div');
+    el.className = 'lp-icon';
+    el.innerHTML = `<div class="lp-icon-img" style="background:${app.bg}">${app.icon}</div><div class="lp-icon-label">${app.label}</div>`;
+    el.onclick = () => { document.getElementById('launchpad-overlay').classList.remove('show'); if (app.action) setTimeout(app.action, 80); };
+    grid.appendChild(el);
+  });
+}
+function filterLaunchpad() {
+  const q = document.getElementById('launchpad-search').value.toLowerCase();
+  renderLaunchpad(q ? LP_APPS.filter(a=>a.label.toLowerCase().includes(q)) : LP_APPS);
+}
+
+// ─────────────── MISSION CONTROL ───────────────
+function openMissionControl() {
+  const overlay = document.getElementById('mission-overlay');
+  overlay.classList.add('show');
+  const container = document.getElementById('mission-windows');
+  container.innerHTML = '';
+  const openWins = Array.from(document.querySelectorAll('.window')).filter(w=>w.style.display!=='none');
+  if (!openWins.length) { container.innerHTML = '<div style="color:rgba(255,255,255,0.3);font-size:14px;margin:auto;padding:40px;">No open windows</div>'; return; }
+  openWins.forEach(w => {
+    const title = w.querySelector('.window-title')?.textContent || 'Window';
+    const card = document.createElement('div');
+    card.className = 'mission-win-card';
+    card.style.cssText = 'width:180px;height:120px;flex-shrink:0;';
+    card.innerHTML = `<div class="mission-win-header"><div class="mission-win-dot" style="background:#ff5f57"></div><div class="mission-win-dot" style="background:#febc2e"></div><div class="mission-win-dot" style="background:#28c840"></div></div><div style="padding:8px;height:78px;background:rgba(20,20,30,0.6);overflow:hidden;position:relative;"><div style="font-size:9px;color:rgba(255,255,255,0.3);line-height:1.5;">${title} preview</div><div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(20,20,30,0.85))"></div></div><div class="mission-win-title">${title}</div>`;
+    card.onclick = () => { closeMissionControl(); bringToFront(w.id); };
+    container.appendChild(card);
+  });
+}
+function closeMissionControl() { document.getElementById('mission-overlay').classList.remove('show'); }
+
+// ─────────────── SIRI ───────────────
+const SIRI_RESPONSES = {
+  'time':    () => 'It\'s '+new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' right now.',
+  'date':    () => 'Today is '+new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})+'.',
+  'weather': () => 'Currently 58° and partly cloudy in Redmond, WA. High of 63° today.',
+  'hello':   () => 'Hello! How can I help you today?',
+  'hi':      () => 'Hi there! What can I do for you?',
+  'battery': () => 'Your MacBook Pro battery is at 87% and charging.',
+  'wifi':    () => 'You\'re connected to Home Network 5G with excellent signal.',
+  'open music':    () => { setTimeout(openMusic, 300); return 'Opening Music!'; },
+  'open safari':   () => { setTimeout(openSafari, 300); return 'Opening Safari!'; },
+  'open finder':   () => { setTimeout(openFinder, 300); return 'Opening Finder!'; },
+  'open notes':    () => { setTimeout(openNotes, 300); return 'Opening Notes!'; },
+  'open terminal': () => { setTimeout(openTerminal, 300); return 'Opening Terminal!'; },
+  'open calculator':()=> { setTimeout(openCalc, 300); return 'Opening Calculator!'; },
+  'open mail':     () => { setTimeout(openMail, 300); return 'Opening Mail!'; },
+  'open photos':   () => { setTimeout(openPhotos, 300); return 'Opening Photos!'; },
+  'open calendar': () => { setTimeout(openCalendar, 300); return 'Opening Calendar!'; },
+  'open weather':  () => { setTimeout(openWeather, 300); return 'Opening Weather!'; },
+  'volume':  () => 'Volume is currently at 50%.',
+  'reminder':() => 'You have 1 reminder: Pick up groceries, due today.',
+  'brightness':()=> 'Display brightness is at 75%.',
+  'screenshot':()=>{ showToast('📸','Screenshot','Screenshot taken','Saved to Desktop.'); return 'Screenshot taken and saved to Desktop.'; },
+  'lock':    () => { setTimeout(lockScreen, 400); return 'Locking your Mac...'; },
+  'thank':   () => 'You\'re welcome! Is there anything else?',
+  'joke':    () => 'Why do programmers prefer dark mode? Because light attracts bugs! 🐛',
+  'who are you':()=> 'I\'m Siri, powered by Apple Intelligence on macOS Tahoe!',
+  'launchpad':()=> { setTimeout(openLaunchpad,300); return 'Opening Launchpad!'; },
+  'music':   () => { setTimeout(openMusic,300); return 'Opening Music!'; },
+};
+function openSiri() {
+  document.getElementById('siri-overlay').classList.add('show');
+  document.getElementById('siri-text').textContent = 'How can I help?';
+  document.getElementById('siri-response').textContent = '';
+  document.getElementById('siri-input').value = '';
+  setTimeout(()=>document.getElementById('siri-input').focus(), 100);
+}
+function closeSiri(e) {
+  if (e && e.target !== document.getElementById('siri-overlay')) return;
+  document.getElementById('siri-overlay').classList.remove('show');
+}
+function siriKeydown(e) { if(e.key==='Enter') siriSubmit(); if(e.key==='Escape') document.getElementById('siri-overlay').classList.remove('show'); }
+function siriSubmit() {
+  const input = document.getElementById('siri-input');
+  const q = input.value.trim().toLowerCase();
+  if (!q) return;
+  document.getElementById('siri-text').textContent = input.value;
+  input.value = '';
+  let resp = 'I\'m still learning! Try asking me to open an app, tell you the time, or crack a joke.';
+  for (const [key, fn] of Object.entries(SIRI_RESPONSES)) {
+    if (q.includes(key)) { resp = fn(); break; }
+  }
+  setTimeout(() => { document.getElementById('siri-response').textContent = resp; document.getElementById('siri-text').textContent = 'Anything else?'; }, 600);
+}
+
+// ─────────────── WEATHER ───────────────
+const WEATHER_HOURS = [
+  {t:'Now',icon:'⛅',temp:'58°'},{t:'1 PM',icon:'⛅',temp:'60°'},{t:'2 PM',icon:'🌤️',temp:'62°'},
+  {t:'3 PM',icon:'🌤️',temp:'63°'},{t:'4 PM',icon:'⛅',temp:'61°'},{t:'5 PM',icon:'🌥️',temp:'59°'},
+  {t:'6 PM',icon:'🌧️',temp:'55°'},{t:'7 PM',icon:'🌧️',temp:'52°'},{t:'8 PM',icon:'🌧️',temp:'50°'},
+];
+const WEATHER_DAYS = [
+  {d:'Today',icon:'⛅',lo:47,hi:63},{d:'Mon',icon:'🌧️',lo:44,hi:55},{d:'Tue',icon:'🌤️',lo:46,hi:64},
+  {d:'Wed',icon:'☀️',lo:48,hi:68},{d:'Thu',icon:'⛅',lo:49,hi:65},{d:'Fri',icon:'🌧️',lo:45,hi:57},{d:'Sat',icon:'🌤️',lo:47,hi:62},
+];
+function renderWeather() {
+  const hourly = document.getElementById('weather-hourly');
+  if (hourly) hourly.innerHTML = WEATHER_HOURS.map(h=>`<div class="weather-hour"><div class="weather-hour-time">${h.t}</div><div class="weather-hour-icon">${h.icon}</div><div class="weather-hour-temp">${h.temp}</div></div>`).join('');
+  const daily = document.getElementById('weather-daily');
+  const minT=44,maxT=68;
+  if (daily) daily.innerHTML = WEATHER_DAYS.map(d=>{
+    const loPct=((d.lo-minT)/(maxT-minT)*100).toFixed(0);
+    const barW=((d.hi-d.lo)/(maxT-minT)*100).toFixed(0);
+    return `<div class="weather-day-row"><div class="weather-day-name">${d.d}</div><div class="weather-day-icon">${d.icon}</div><div class="weather-day-low">${d.lo}°</div><div class="weather-day-bar"><div class="weather-day-fill" style="left:${loPct}%;width:${barW}%"></div></div><div class="weather-day-high">${d.hi}°</div></div>`;
+  }).join('');
+}
+function openWeather() { showWindow('weather-window'); renderWeather(); }
+
+// ─────────────── LOCK SCREEN ───────────────
+function updateLockClock() {
+  const n = new Date();
+  const h = String(n.getHours()).padStart(2,'0'), m = String(n.getMinutes()).padStart(2,'0');
+  const ltEl = document.getElementById('lock-time-display');
+  const ldEl = document.getElementById('lock-date-display');
+  if (ltEl) ltEl.textContent = h+':'+m;
+  if (ldEl) ldEl.textContent = n.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+}
+setInterval(updateLockClock, 1000); updateLockClock();
+function lockScreen() {
+  document.querySelectorAll('.dropdown.show').forEach(d=>d.classList.remove('show'));
+  document.getElementById('lock-screen').classList.add('show');
+  document.getElementById('lock-pw').value = '';
+  setTimeout(()=>document.getElementById('lock-pw').focus(), 300);
+}
+function unlock() {
+  const ls = document.getElementById('lock-screen');
+  ls.style.opacity = '0'; ls.style.transition = 'opacity 0.4s';
+  setTimeout(()=>{ ls.classList.remove('show'); ls.style.opacity=''; ls.style.transition=''; }, 400);
+}
+function unlockKeydown(e) { if(e.key==='Enter') unlock(); }
+
+// ─────────────── QUICK LOOK ───────────────
+function showQuickLook(icon, name, meta) {
+  document.getElementById('ql-icon').textContent = icon;
+  document.getElementById('ql-name').textContent = name;
+  document.getElementById('ql-meta').textContent = meta;
+  document.getElementById('quicklook-overlay').classList.add('show');
+}
+function closeQuickLook(e) {
+  if (!e || e.target===document.getElementById('quicklook-overlay') || (e.target&&e.target.classList.contains('ql-close-btn')))
+    document.getElementById('quicklook-overlay').classList.remove('show');
+}
+
+// Spacebar Quick Look on selected Finder file
+document.addEventListener('keydown', e => {
+  if (e.key===' ' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+    const sel = document.querySelector('.finder-file.selected');
+    if (sel) { e.preventDefault(); const icon=sel.querySelector('.ff-icon').textContent; const name=sel.querySelector('.ff-name').textContent; showQuickLook(icon,name,(Math.random()*8+0.5).toFixed(1)+' MB · Modified today'); }
+  }
+  if (e.key==='F4') { e.preventDefault(); openLaunchpad(); }
+  if (e.key==='F3') { e.preventDefault(); openMissionControl(); }
+});
+
+// Extra spotlight items
+spotlightItems.push(
+  {icon:'✉️',name:'Mail',    type:'Application',action:openMail},
+  {icon:'🖼️',name:'Photos',  type:'Application',action:openPhotos},
+  {icon:'🌤️',name:'Weather', type:'Application',action:openWeather},
+  {icon:'🎙️',name:'Siri',    type:'Feature',    action:openSiri},
+  {icon:'🚀',name:'Launchpad',type:'Feature',   action:openLaunchpad},
+  {icon:'🗔', name:'Mission Control',type:'Feature',action:openMissionControl}
+);
+
+// Simulate some activity
+setTimeout(() => {
+  showToast('🍎','macOS Tahoe','Welcome back!','Your Mac is up to date.');
+}, 3200);
+</script>
+</body>
 </html>
